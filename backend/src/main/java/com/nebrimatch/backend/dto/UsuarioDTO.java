@@ -9,8 +9,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+// getters y setters
 @NoArgsConstructor
+// constructor vacío
 @AllArgsConstructor
+// constructor con todos los campos
 public class UsuarioDTO {
 
     private Long id;

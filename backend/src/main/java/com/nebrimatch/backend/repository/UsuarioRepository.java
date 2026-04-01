@@ -10,6 +10,7 @@ import com.nebrimatch.backend.model.Usuario;
 
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+// long es ID numérico autoincremental
 
     // Buscar por email o nombreUsuario (login)
     Optional<Usuario> findByEmail(String email);

@@ -14,6 +14,9 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+// Es equivalente a poner @Autowired en el constructor, pero sin escribirlo manualmente; 
+// Lombok lo genera automáticamente y hace que el código sea más limpio genera automáticamente un constructor con todos los campos 
+// final de la clase.
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;

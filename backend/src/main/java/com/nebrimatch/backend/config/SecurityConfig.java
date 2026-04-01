@@ -14,9 +14,12 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+// Esta clase configura la seguridad de la aplicación, incluyendo CORS y reglas de acceso a los endpoints.
 public class SecurityConfig {
 
     @Bean
+    // Configura la cadena de filtros de seguridad, definiendo qué endpoints son públicos y cuáles requieren autenticación.
+    // Es equivalente al new object de Java, pero para configurar la seguridad de Spring.
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             // Desactivar CSRF porque es una API REST (sin sesiones de navegador)
