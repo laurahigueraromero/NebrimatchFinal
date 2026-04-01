@@ -1,0 +1,120 @@
+package com.nebrimatch.backend.service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import com.nebrimatch.backend.dto.UsuarioDTO;
+import com.nebrimatch.backend.model.RolUsuario;
+import com.nebrimatch.backend.model.Usuario;
+import com.nebrimatch.backend.repository.UsuarioRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class UsuarioService {
+
+    private final UsuarioRepository usuarioRepository;
+
+    // Obtener todos los usuarios
+    public List<UsuarioDTO> obtenerTodos() {
+        return usuarioRepository.findAll()
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    // Obtener usuario por ID
+    public UsuarioDTO obtenerPorId(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+        return toDTO(usuario);
+    }
+
+    // Obtener usuario por email
+    public UsuarioDTO obtenerPorEmail(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + email));
+        return toDTO(usuario);
+    }
+
+    // Crear usuario
+    public UsuarioDTO crear(UsuarioDTO dto) {
+        if (usuarioRepository.existsByEmail(dto.getEmail())) {
+            throw new RuntimeException("Ya existe un usuario con ese email");
+        }
+        if (usuarioRepository.existsByNombreUsuario(dto.getNombreUsuario())) {
+            throw new RuntimeException("Ya existe un usuario con ese nombre de usuario");
+        }
+
+        Usuario usuario = toEntity(dto);
+        Usuario guardado = usuarioRepository.save(usuario);
+        return toDTO(guardado);
+    }
+
+    // Actualizar usuario
+    public UsuarioDTO actualizar(Long id, UsuarioDTO dto) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+
+        usuario.setDescripcion(dto.getDescripcion());
+        usuario.setLenguajesAEnsenar(dto.getLenguajesAEnsenar());
+        usuario.setLenguajesAAprender(dto.getLenguajesAAprender());
+
+        return toDTO(usuarioRepository.save(usuario));
+    }
+
+    // Eliminar usuario
+    public void eliminar(Long id) {
+        if (!usuarioRepository.existsById(id)) {
+            throw new RuntimeException("Usuario no encontrado con id: " + id);
+        }
+        usuarioRepository.deleteById(id);
+    }
+
+    // Buscar usuarios por lenguaje que enseñan
+    public List<UsuarioDTO> buscarPorLenguajeEnsenado(String lenguaje) {
+        return usuarioRepository.findByLenguajesAEnsenarContaining(lenguaje)
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    // Buscar usuarios por lenguaje que aprenden
+    public List<UsuarioDTO> buscarPorLenguajeAprendido(String lenguaje) {
+        return usuarioRepository.findByLenguajesAAprenderContaining(lenguaje)
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    // Convertir entidad -> DTO
+    private UsuarioDTO toDTO(Usuario usuario) {
+        RolUsuario rolUsuario = usuario.getRolUsuario();
+        return new UsuarioDTO(
+                usuario.getId(),
+                usuario.getNombreUsuario(),
+                usuario.getEmail(),
+                usuario.getDescripcion(),
+                usuario.getLenguajesAEnsenar(),
+                usuario.getLenguajesAAprender(),
+                usuario.getNumeroMatches(),
+                usuario.getFechaCreacion(),
+                rolUsuario != null ? rolUsuario.getRol() : null
+        );
+    }
+
+    // Convertir DTO -> entidad
+    private Usuario toEntity(UsuarioDTO dto) {
+        Usuario usuario = new Usuario();
+        usuario.setNombreUsuario(dto.getNombreUsuario());
+        usuario.setEmail(dto.getEmail());
+        usuario.setDescripcion(dto.getDescripcion());
+        usuario.setLenguajesAEnsenar(dto.getLenguajesAEnsenar());
+        usuario.setLenguajesAAprender(dto.getLenguajesAAprender());
+        usuario.setNumeroMatches(0);
+        return usuario;
+    }
+}

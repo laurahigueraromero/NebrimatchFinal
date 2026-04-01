@@ -1,0 +1,51 @@
+
+Entidades en Spring Boot
+========================
+
+Una entidad (@Entity) es una clase Java que representa una tabla en la base de datos.
+Cada instancia de la clase = una fila en la tabla.
+
+Anotaciones principales:
+- @Entity         -> le dice a JPA que esta clase es una tabla
+- @Id             -> marca la clave primaria
+- @Column         -> personaliza el nombre/restricciones de una columna
+- @OneToMany, @ManyToOne, etc. -> define relaciones entre tablas
+
+
+Repositorios en Spring Boot
+============================
+
+Un repositorio es una interfaz que da acceso a la base de datos sin escribir SQL.
+Spring genera la implementacion automaticamente.
+
+Al extender JpaRepository<Entidad, TipoClavePrimaria> obtienes gratis:
+
+- save(entity)     -> Inserta o actualiza
+- findById(id)     -> Busca por ID
+- findAll()        -> Trae todos los registros
+- delete(entity)   -> Elimina
+- count()          -> Cuenta registros
+
+Tambien puedes anadir queries personalizadas por nombre de metodo:
+- findByNombre(String nombre)
+- findByEmail(String email)
+
+
+Resumen
+=======
+
+- Entidad     = mapea una tabla de la BD a un objeto Java
+- Repositorio = interfaz para hacer operaciones CRUD sobre esa tabla sin SQL manual
+
+
+Spring Boot y ORM
+==================
+
+Spring Boot usa JPA como estandar y Hibernate como implementacion por debajo, que es un ORM (Object-Relational Mapping).
+
+El ORM se encarga de:
+- Convertir objetos Java -> filas en la BD
+- Convertir filas en la BD -> objetos Java
+- Generar el SQL automaticamente
+
+Tu trabajas solo con objetos Java, el SQL lo gestiona Hibernate por debajo.

@@ -82,6 +82,7 @@ Caso: Vue pide el perfil de un usuario ==>
 5. Vue recibe la conversación creada y redirige al chat
 
 
+ruta a seguir :
 
-
+ model => repository => dto => service =>  controller ==> securityConfig
 
