@@ -20,8 +20,10 @@ import com.nebrimatch.backend.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
+// Define esta clase como un controlador REST, lo que permite manejar solicitudes HTTP y devolver respuestas en formato JSON.
 @RequestMapping("/api/usuarios")
 @RequiredArgsConstructor
+// Es equivalente a poner @Autowired en el constructor, pero sin escribirlo manualmente;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;

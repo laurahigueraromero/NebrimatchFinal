@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 public class RolUsuario {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // estrategia de generación de IDs en JPA/Hibernate.
     private Long id;
 
     @Column(name = "rol", nullable = false)
