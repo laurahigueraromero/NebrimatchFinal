@@ -91,25 +91,32 @@ public class ComunidadService {
     }
 
     // actualizar comunidad ==>
-
-     public ComunidadDTO actualizarComunidad(Long idComunidad, ComunidadDTO comunidadDto) {
+    public ComunidadDTO actualizarComunidad(Long idComunidad, String nombre, String descripcion, String imagenComunidad, Long solicitanteId) {
         Comunidad comunidad = comunidadRepository.findById(idComunidad)
                 .orElseThrow(() -> new RuntimeException("Comunidad no encontrada"));
 
-       comunidad.setNombreComunidad(comunidadDto.getNombreComunidad());
-       comunidad.setDescripcionComunidad(comunidadDto.getDescripcionComunidad());
-       comunidad.setImagenComunidad(comunidadDto.getImagenComunidad());
-
-       return toComunidadDTO(comunidadRepository.save(comunidad));
-     }   
-
-     // eliminar comunidad==>
-        public void eliminarComunidad(Long idComunidad) {
-            if (!comunidadRepository.existsById(idComunidad)) {
-                throw new RuntimeException("Comunidad no encontrada");
-            }
-            comunidadRepository.deleteById(idComunidad);
+        if (!comunidad.getCreadorComunidad().getId().equals(solicitanteId)) {
+            throw new RuntimeException("Solo el creador puede modificar la comunidad");
         }
+
+        comunidad.setNombreComunidad(nombre);
+        comunidad.setDescripcionComunidad(descripcion);
+        comunidad.setImagenComunidad(imagenComunidad);
+
+        return toComunidadDTO(comunidadRepository.save(comunidad));
+    }
+
+    // eliminar comunidad ==>
+    public void eliminarComunidad(Long idComunidad, Long solicitanteId) {
+        Comunidad comunidad = comunidadRepository.findById(idComunidad)
+                .orElseThrow(() -> new RuntimeException("Comunidad no encontrada"));
+
+        if (!comunidad.getCreadorComunidad().getId().equals(solicitanteId)) {
+            throw new RuntimeException("Solo el creador puede eliminar la comunidad");
+        }
+
+        comunidadRepository.deleteById(idComunidad);
+    }
 
 
 
