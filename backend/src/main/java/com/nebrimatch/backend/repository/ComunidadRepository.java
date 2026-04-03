@@ -22,4 +22,8 @@ public interface ComunidadRepository extends JpaRepository<Comunidad, Long> {
     // buscar todas las comunidades creadas por un usuario (puede tener varias por eso ponemos List)
     List<Comunidad> findByCreadorComunidad(Usuario creadorComunidad);
 
+
+    // para el buscador!!!
+    List<Comunidad> findByNombreComunidadContainingIgnoreCase(String texto);
+
 }

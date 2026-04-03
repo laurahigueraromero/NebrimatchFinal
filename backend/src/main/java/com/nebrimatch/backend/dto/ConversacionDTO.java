@@ -9,13 +9,13 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MensajeDTO {
+public class ConversacionDTO {
 
     private Long id;
-    private String contenido;
-    private LocalDateTime fechaEnvio;
-    private Long emisorId;
-    private String emisorNombre;
-    private Long conversacionId;
+    private LocalDateTime fechaCreacion;
+    private Long usuario1Id;
+    private String usuario1Nombre;
+    private Long usuario2Id;
+    private String usuario2Nombre;
 
 }

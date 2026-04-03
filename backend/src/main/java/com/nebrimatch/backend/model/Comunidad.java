@@ -37,6 +37,8 @@ private String imagenComunidad;
 @Column (name= "fecha_creacion", updatable = false)
 private LocalDateTime fechaCreacion;
 
+
+//foreign key ==>
 @ManyToOne
 @JoinColumn(name = "creador_comunidad", nullable = false)
 private Usuario creadorComunidad;
