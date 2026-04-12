@@ -14,8 +14,7 @@ public interface MensajeRepository extends JpaRepository<Mensaje, Long> {
     // mensajes ordenados por fecha (para mostrar el chat en orden cronológico)
     List<Mensaje> findByConversacionIdOrderByFechaEnvioAsc(Long conversacionId);
 
-    // los últimos N mensajes de una conversación (para previsualización en la lista
-    // de chats) en vez de que salgan los primeros que serían los más antiguos
-    List<Mensaje> findTop1ByConversacionIdOrderByFechaEnvioDesc(Long conversacionId);
+    // último mensaje de una conversación (previsualización)
+    java.util.Optional<Mensaje> findTopByConversacionIdOrderByFechaEnvioDesc(Long conversacionId);
 
 }

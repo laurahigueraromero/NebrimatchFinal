@@ -1,0 +1,78 @@
+Resumen de la capa `service` y ejemplo — ConversacionService
+
+1) Propósito general de la capa `service`
+- Orquestar la lógica de negocio entre repositorios, entidades (model) y DTOs.
+- Aplicar validaciones, reglas de negocio, control de transacciones y permisos.
+- Convertir entidades a DTOs antes de devolver datos a controladores/REST.
+- Publicar eventos internos o notificaciones externas (WebSocket, mensajería).
+- Centralizar decisiones que no pertenecen ni al repositorio ni al controlador.
+
+2) Componentes y responsabilidades habituales
+- Inyección de `Repository` (DAO) para acceder a datos persistidos.
+- Validaciones de entrada: comprobar parámetros, tamaños, formatos.
+- Manejo de excepciones específicas (ej. NotFound, Conflict, BadRequest).
+- Transacciones: métodos de escritura deben ser atómicos (`@Transactional`).
+- Mapeo: conversión entre entidades JPA y DTOs (manual, mappers, o MapStruct).
+- Publicación de eventos: WebSocket, ApplicationEventPublisher o colas.
+- Logging: registrar operaciones importantes o errores.
+
+3) Buenas prácticas
+- Evitar devolver entidades JPA directamente a la API.
+- Extraer mapeos a clases separadas (`Mapper`) o usar MapStruct.
+- Usar excepciones específicas y un `@ControllerAdvice` global.
+- Mantener métodos del service con responsabilidades claras y limitadas.
+- Añadir pruebas unitarias y de integración (no incluidas aquí por petición).
+
+4) Cambios implementados en este proyecto (resumen técnico)
+- Excepciones personalizadas: `NotFoundException`, `ConflictException`, `BadRequestException`.
+- `GlobalExceptionHandler` con mapeo de excepción → código HTTP.
+- Mappers separados: `ConversationMapper`, `MessageMapper` (componentes Spring).
+- `ConversacionService` refactorizado:
+  - Uso de mappers inyectados en lugar de métodos privados.
+  - `@Transactional` en métodos de escritura (`crearConversacion`, `enviarMensaje`).
+  - Validación de `contenido` en `enviarMensaje`.
+  - Comprobación de permisos: emisor debe pertenecer a la conversación.
+  - Logging con `@Slf4j` para operaciones clave.
+  - Publicación de notificaciones WebSocket vía `SimpMessagingTemplate` a `/topic/conversations/{id}`.
+  - Uso de `Optional` en repositorio para obtener el último mensaje.
+- `WebSocketConfig` añadido: STOMP endpoint `/ws` y broker simple `/topic`, `/queue`.
+- `pom.xml` actualizado para incluir `spring-boot-starter-websocket`.
+
+5) Ejemplo — Qué hace `ConversacionService` (flujo)
+- crearConversacion(usuario1Id, usuario2Id):
+  1. Busca ambos usuarios (si no existen → `NotFoundException`).
+  2. Comprueba si ya existe la conversación (si existe → `ConflictException`).
+  3. Crea y persiste la entidad `Conversacion` dentro de una transacción.
+  4. Devuelve `ConversacionDTO` mapeado por `ConversationMapper`.
+
+- enviarMensaje(conversacionId, emisorId, contenido):
+  1. Valida `contenido` no vacío (si falla → `BadRequestException`).
+  2. Carga la conversación y el emisor (si no existen → `NotFoundException`).
+  3. Verifica que el emisor pertenezca a la conversación (si no → `ConflictException`).
+  4. Crea y guarda la entidad `Mensaje` en una transacción.
+  5. Mapea a `MensajeDTO` con `MessageMapper`.
+  6. Publica la DTO por WebSocket en `/topic/conversations/{conversacionId}`.
+  7. Devuelve `MensajeDTO` al controlador.
+
+
+6) Notas sobre los mappers
+- Propósito: los mappers convierten entidades JPA a DTOs (y viceversa) para separar la
+  capa de persistencia de la API y controlar qué campos se exponen.
+- Beneficios:
+  - Seguridad/encapsulación: evita exponer campos innecesarios o sensibles.
+  - Serialización segura: reduce problemas con lazy-loading y controla JSON resultante.
+  - Estabilidad de la API: desacopla cambios en entidades de la representación pública.
+  - Reutilización y testabilidad: centraliza la lógica de transformación en un solo lugar.
+- Ejemplos en este proyecto:
+  - `MessageMapper`: convierte `Mensaje` → `MensajeDTO`.
+  - `ConversationMapper`: convierte `Conversacion` → `ConversacionDTO`.
+  - `MatchMapper`: convierte `MatchUsuario` → `MatchUsuarioDTO`.
+- Privados vs componentes: mapeos pequeños pueden estar como métodos privados; cuando
+  hay reutilización o mapeos complejos, extraer a `@Component` o usar MapStruct es
+  más limpio y probadamente escalable.
+
+7) Recomendaciones finales
+- Si los mappers crecen, usar MapStruct para generar mapeos y reducir código repetitivo.
+- Mantener DTOs pequeños y estables para minimizar el acoplamiento entre capas.
+
+
