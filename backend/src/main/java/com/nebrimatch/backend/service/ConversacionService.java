@@ -72,9 +72,12 @@ public class ConversacionService {
 
                 return conversacionRepository.findByUsuario1OrUsuario2(usuario, usuario)
                                 .stream()
-                                .map(conversationMapper::toConversacionDTO)
+                                .map(conversationMapper::toConversacionDTO) 
                                 .collect(Collectors.toList());
-                                // esto empuja datos del servidor al cliente sin que el cliente lo pida
+                                // Cliente pide sus conversaciones
+                                        //→ busca en BD
+                                        //→ mapea entidades a DTOs 
+                                        //→ devuelve la lista al cliente
         }
 
         public ConversacionDTO obtenerConversacionPorId(Long conversacionId) {
