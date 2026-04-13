@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class ConversacionService {
+        // proceso ==> buscar en repository para verificar info, crear entidad, guardar, mappear a DTO, devolver al controlador
 
         private final ConversacionRepository conversacionRepository;
         private final UsuarioRepository usuarioRepository;

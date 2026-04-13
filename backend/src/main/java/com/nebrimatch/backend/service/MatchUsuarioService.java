@@ -32,28 +32,28 @@ public class MatchUsuarioService {
 		if (usuario1Id.equals(usuario2Id)) {
 			throw new ConflictException("No se puede hacer match consigo mismo");
 		}
-
+				// buscar ususarios por id para comprobar que existen ==>
 		Usuario u1 = usuarioRepository.findById(usuario1Id)
 				.orElseThrow(() -> new NotFoundException("Usuario 1 no encontrado"));
 
 		Usuario u2 = usuarioRepository.findById(usuario2Id)
 				.orElseThrow(() -> new NotFoundException("Usuario 2 no encontrado"));
-
+				// boleano si existen los usuarios ya con match
 		boolean existe = matchUsuarioRepository
 				.existsByUsuario1AndUsuario2OrUsuario2AndUsuario1(u1, u2, u1, u2);
-
+	// si se da la condicion de que existe el match se lanza excepcion de conflicto
 		if (existe) {
 			throw new ConflictException("Ya existe un match entre estos usuarios");
 		}
-
+// si no, seguimos con proceso y se guarda el match en la base de datos
 		MatchUsuario match = new MatchUsuario();
 		match.setUsuario1(u1);
 		match.setUsuario2(u2);
-
+		// guardamos el match
 		MatchUsuario guardado = matchUsuarioRepository.save(match);
 
 		log.info("Match creado: {} entre {} y {}", guardado.getId(), usuario1Id, usuario2Id);
-
+		// mappeamos el match guardado a DTO para devolverlo al controlador (DTO siempre es lo que se devuelve al controlador, no la entidad)
 		return matchMapper.toMatchUsuarioDTO(guardado);
 	}
 
