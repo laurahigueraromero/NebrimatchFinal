@@ -11,34 +11,32 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
-
+// Esta clase controla quién puede acceder a qué y cómo se comporta la API ante peticiones externas.
 @Configuration
 @EnableWebSecurity
-// Esta clase configura la seguridad de la aplicación, incluyendo CORS y reglas de acceso a los endpoints.
+// Esta clase configura la seguridad de la aplicación, incluyendo CORS y reglas
+// de acceso a los endpoints.
 public class SecurityConfig {
 
     @Bean
-    // Configura la cadena de filtros de seguridad, definiendo qué endpoints son públicos y cuáles requieren autenticación.
-    // Es equivalente al new object de Java, pero para configurar la seguridad de Spring.
+    // Configura la cadena de filtros de seguridad, definiendo qué endpoints son
+    // públicos y cuáles requieren autenticación.
+    // Es equivalente al new object de Java, pero para configurar la seguridad de
+    // Spring.
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Desactivar CSRF porque es una API REST (sin sesiones de navegador)
-            .csrf(csrf -> csrf.disable())
+                // Desactivar CSRF porque es una API REST (sin sesiones de navegador)
+                .csrf(csrf -> csrf.disable())
 
-            // Configurar CORS
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // Configurar CORS
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-            // Sin sesiones: cada petición es independiente
-            .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // Sin sesiones: cada petición es independiente
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-            // Reglas de acceso por endpoint
-            .authorizeHttpRequests(auth -> auth
-                // Endpoints públicos (registro, login en el futuro)
-                .requestMatchers("/api/usuarios").permitAll()
-                // El resto requiere autenticación
-                .anyRequest().authenticated()
-            );
+                // Todos los endpoints públicos hasta implementar autenticación
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll());
 
         return http.build();
     }
@@ -48,7 +46,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         // Orígenes permitidos (frontend local en desarrollo)
-        config.setAllowedOrigins(List.of("http://localhost:4200", "http://localhost:3000"));
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
