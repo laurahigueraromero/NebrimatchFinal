@@ -1,0 +1,260 @@
+===============================================================
+        RESUMEN BACKEND - NEBRIMATCH
+        Fecha: 19/04/2026
+===============================================================
+
+DESCRIPCIÓN GENERAL
+-------------------
+Backend de NebrimatchFinal: plataforma de intercambio de idiomas.
+Tecnología: Spring Boot 4.0.3 con Java 21 y Maven.
+Base de datos: MySQL 8.0 (esquema: nebri_match).
+Puerto del servidor: 8080.
+Despliegue: Docker (docker-compose con MySQL + backend).
+
+
+ESTRUCTURA DEL PROYECTO
+-----------------------
+com.nebrimatch.backend/
+  ├── BackendApplication.java        → Punto de entrada Spring Boot
+  ├── config/                        → Configuración (Security, WebSocket)
+  ├── controller/                    → Endpoints REST y WebSocket
+  ├── service/                       → Lógica de negocio
+  ├── service/mapper/                → Conversores entidad ↔ DTO
+  ├── repository/                    → Acceso a base de datos (JPA)
+  ├── model/                         → Entidades JPA
+  ├── dto/                           → Objetos de transferencia de datos
+  └── exception/                     → Excepciones personalizadas y handler global
+
+
+DEPENDENCIAS PRINCIPALES
+------------------------
+- spring-boot-starter-data-jpa       → ORM / Hibernate
+- spring-boot-starter-security       → Seguridad (configurada, sin autenticación real aún)
+- spring-boot-starter-webmvc         → API REST
+- spring-boot-starter-websocket      → Mensajería en tiempo real (STOMP)
+- mysql-connector-j                  → Driver MySQL
+- Lombok                             → Reducción de boilerplate (@Data, @Slf4j, etc.)
+
+
+MODELOS DE DATOS (entidades JPA)
+---------------------------------
+1. Usuario
+   - id, nombreUsuario (único), email (único), descripcion
+   - lenguajesAEnsenar, lenguajesAAprender
+   - numeroMatches, fechaCreacion
+   - Relación OneToOne con RolUsuario (cascade delete)
+
+2. RolUsuario
+   - id, rol (ENUM: 'estudiante' | 'profesor')
+   - FK → Usuario
+
+3. Comunidad
+   - id, nombreComunidad (único), descripcionComunidad, imagenComunidad
+   - fechaCreacion
+   - FK creador_comunidad → Usuario
+
+4. MatchUsuario
+   - id, fechaMatch
+   - FK usuario1_id → Usuario, FK usuario2_id → Usuario
+
+5. Conversacion
+   - id, fechaCreacion
+   - FK usuario1_id → Usuario, FK usuario2_id → Usuario
+
+6. Mensaje
+   - id, contenido (TEXT), fechaEnvio
+   - FK emisor_id → Usuario, FK conversacion_id → Conversacion
+
+
+CONTROLADORES Y ENDPOINTS REST
+--------------------------------
+
+UsuarioController  →  /api/usuarios
+  GET    /api/usuarios                              → Listar todos los usuarios
+  GET    /api/usuarios/{id}                         → Obtener usuario por ID
+  GET    /api/usuarios/email/{email}                → Obtener usuario por email
+  POST   /api/usuarios                              → Crear nuevo usuario
+  PUT    /api/usuarios/{id}                         → Actualizar usuario
+  DELETE /api/usuarios/{id}                         → Eliminar usuario
+  GET    /api/usuarios/matching?ensenan=X&aprenden=Y → Buscar por idiomas
+
+ComunidadController  →  /api/comunidades
+  GET    /api/comunidades                           → Listar todas las comunidades
+  GET    /api/comunidades/{id}                      → Obtener comunidad por ID
+  GET    /api/comunidades/creador/{creadorId}       → Comunidades de un creador
+  GET    /api/comunidades/buscar?texto=...          → Buscar por nombre (case-insensitive)
+  POST   /api/comunidades                           → Crear comunidad
+  PUT    /api/comunidades/{idComunidad}             → Actualizar comunidad (solo el creador)
+  DELETE /api/comunidades/{idComunidad}             → Eliminar comunidad (solo el creador)
+
+MatchUsuarioController  →  /api/matches
+  POST   /api/matches                               → Crear match entre dos usuarios
+  GET    /api/matches/{id}                          → Obtener match por ID
+  GET    /api/matches/usuario/{usuarioId}           → Matches de un usuario
+  DELETE /api/matches/{id}                          → Eliminar match
+
+ConversacionController  →  /api/conversaciones
+  POST   /api/conversaciones                        → Crear conversación
+  GET    /api/conversaciones/usuario/{usuarioId}    → Conversaciones de un usuario
+  GET    /api/conversaciones/{id}                   → Obtener conversación por ID
+  GET    /api/conversaciones/{id}/mensajes          → Mensajes de una conversación
+  GET    /api/conversaciones/{id}/mensajes/ultimo   → Último mensaje (preview)
+
+ChatController  →  WebSocket STOMP
+  @MessageMapping  /chat.enviar/{conversacionId}   → Enviar mensaje
+  Publica en:      /topic/conversations/{id}        → Broadcast a suscriptores
+
+
+SERVICIOS (LÓGICA DE NEGOCIO)
+------------------------------
+UsuarioService
+  - CRUD completo de usuarios
+  - Validación de email y nombreUsuario únicos
+  - Búsqueda por idiomas enseñados/aprendidos
+  - Mapeo interno entidad ↔ DTO
+
+ComunidadService
+  - Creación con validaciones (creador existe, nombre único)
+  - Búsqueda por texto (case-insensitive)
+  - Actualización y eliminación solo por el creador (control de permisos)
+
+MatchUsuarioService  (@Slf4j, @Transactional)
+  - Previene auto-match (un usuario consigo mismo)
+  - Previene matches duplicados
+  - Logging de operaciones clave
+
+ConversacionService  (@Slf4j, @Transactional)
+  - Previene conversaciones duplicadas
+  - enviarMensaje: valida contenido, verifica que el emisor sea participante
+  - Publica mensajes en tiempo real via SimpMessagingTemplate → WebSocket
+  - obtenerUltimoMensaje: para previews en lista de chats
+
+
+REPOSITORIOS (ACCESO A DATOS)
+------------------------------
+UsuarioRepository
+  - findByEmail, findByNombreUsuario
+  - existsByEmail, existsByNombreUsuario
+  - findByLenguajesAEnsenarContaining, findByLenguajesAAprenderContaining
+
+ComunidadRepository
+  - findByNombreComunidad, existsByNombreComunidad
+  - findByCreadorComunidad
+  - findByNombreComunidadContainingIgnoreCase
+
+MatchUsuarioRepository
+  - findByUsuario1OrUsuario2
+  - existsByUsuario1AndUsuario2OrUsuario2AndUsuario1 (bidireccional)
+
+ConversacionRepository
+  - findByUsuario1OrUsuario2
+  - findByUsuario1AndUsuario2
+  - existsByUsuario1AndUsuario2OrUsuario2AndUsuario1 (bidireccional)
+
+MensajeRepository
+  - findByConversacionId
+  - findByConversacionIdOrderByFechaEnvioAsc (cronológico)
+  - findTopByConversacionIdOrderByFechaEnvioDesc (último mensaje)
+
+
+MAPPERS
+-------
+MessageMapper      → Mensaje      ↔ MensajeDTO
+ConversationMapper → Conversacion ↔ ConversacionDTO
+MatchMapper        → MatchUsuario ↔ MatchUsuarioDTO
+(Todos son @Component para inyección de dependencias)
+
+
+DTOs
+----
+UsuarioDTO       → id, nombreUsuario, email, descripcion, lenguajes, numeroMatches, fechaCreacion, rol
+ComunidadDTO     → id, nombreComunidad, descripcion, imagen, fechaCreacion, creadorId, creadorNombre
+MatchUsuarioDTO  → id, usuario1Id, usuario1Nombre, usuario2Id, usuario2Nombre, fechaMatch
+ConversacionDTO  → id, fechaCreacion, usuario1Id, usuario1Nombre, usuario2Id, usuario2Nombre
+MensajeDTO       → id, contenido, fechaEnvio, emisorId, emisorNombre, conversacionId
+
+
+MANEJO DE EXCEPCIONES
+----------------------
+Excepciones personalizadas:
+  - NotFoundException    → 404 NOT FOUND
+  - ConflictException    → 409 CONFLICT (duplicados, permisos)
+  - BadRequestException  → 400 BAD REQUEST (entrada inválida)
+
+GlobalExceptionHandler (@RestControllerAdvice):
+  - NotFoundException        → 404
+  - ConflictException        → 409
+  - BadRequestException      → 400
+  - IllegalArgumentException → 400
+  - Exception (genérica)     → 500
+
+
+CONFIGURACIÓN
+--------------
+SecurityConfig:
+  - CSRF deshabilitado (API REST stateless)
+  - CORS habilitado para http://localhost:5173 (frontend Vue)
+  - Sesiones: STATELESS (preparado para JWT)
+  - Todos los endpoints: permitAll (autenticación pendiente)
+  - Métodos permitidos: GET, POST, PUT, DELETE, OPTIONS
+
+WebSocketConfig:
+  - Endpoint STOMP: /ws (con fallback SockJS)
+  - Prefijo de aplicación: /app
+  - Message broker: /topic y /queue
+  - CORS WebSocket: todos los orígenes (*)
+
+
+DESPLIEGUE CON DOCKER
+----------------------
+docker-compose.yml:
+  Servicio MySQL:
+    - Imagen: mysql:8.0
+    - Contenedor: nebrimatch-mysql
+    - Puerto: 3306
+    - Base de datos: nebri_match
+    - Contraseña root: root
+    - Volumen persistente: mysql_data
+    - Health check: mysqladmin ping
+
+  Servicio Backend:
+    - Build desde: ./backend/Dockerfile
+    - Contenedor: nebrimatch-backend
+    - Puerto: 8080
+    - Variables de entorno:
+        SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/nebri_match
+        SPRING_DATASOURCE_USERNAME=root
+        SPRING_DATASOURCE_PASSWORD=root
+    - Depende de MySQL (con condición healthy)
+
+Dockerfile (multi-stage):
+  Stage 1 (build): Maven 3.9 + JDK 21 → mvn clean package -DskipTests
+  Stage 2 (runtime): Eclipse Temurin JRE 21 slim → java -jar app.jar
+
+
+ASPECTOS TÉCNICOS DESTACADOS
+------------------------------
+- Timestamps automáticos con @PrePersist en todas las entidades
+- Lombok en todas las clases (@Data, @NoArgsConstructor, @AllArgsConstructor)
+- @Transactional en operaciones de escritura críticas
+- @Slf4j para logging en MatchUsuarioService y ConversacionService
+- Streams de Java para mapeo de listas
+- Hibernate DDL: update (crea tablas nuevas, preserva datos existentes)
+- show-sql: true en desarrollo
+- Diseño bidireccional: matches y conversaciones no distinguen orden usuario1/usuario2
+- WebSocket + STOMP para mensajería en tiempo real
+- Control de permisos a nivel de servicio (no a nivel de seguridad)
+
+
+PENDIENTE / TRABAJO FUTURO
+---------------------------
+- Implementar autenticación real (JWT o OAuth2)
+- Añadir autorización por roles en endpoints
+- Validación de entrada con @Valid / Bean Validation
+- Rate limiting
+- HTTPS en producción
+- Gestión segura de contraseñas (variables de entorno, secrets)
+- Restricción de CORS WebSocket por dominio específico
+- Tests unitarios e integración
+
+
