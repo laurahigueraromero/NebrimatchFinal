@@ -29,3 +29,4 @@ public class ChatController {
         );
     }
 }
+// El ChatController ya está completo. Solo necesita el @MessageMapping de enviar mensaje porque es el único flujo en tiempo real.

@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -43,5 +44,10 @@ private LocalDateTime fechaCreacion;
 @JoinColumn(name = "creador_comunidad", nullable = false)
 private Usuario creadorComunidad;
 
-// hay que utilizar @JoinColumn → para claves foráneas que apuntan a otra entidad
+/*@PrePersist es un hook de JPA que ejecuta un método justo antes de que la entidad se guarde por primera vez en la base de datos. */
+
+@PrePersist
+protected void onCreate() {
+    fechaCreacion = LocalDateTime.now();
+}
 }

@@ -11,6 +11,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+
 // Esta clase controla quién puede acceder a qué y cómo se comporta la API ante peticiones externas.
 @Configuration
 @EnableWebSecurity
@@ -30,7 +31,12 @@ public class SecurityConfig {
 
                 // Configurar CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
+                /*
+                 * CORS
+                 * Protege peticiones HTTP entre dominios distintos. Es una política del
+                 * navegador que bloquea peticiones de http://localhost:5173 hacia
+                 * http://localhost:8080 a menos que el servidor las permita explícitamente.
+                 */
                 // Sin sesiones: cada petición es independiente
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 

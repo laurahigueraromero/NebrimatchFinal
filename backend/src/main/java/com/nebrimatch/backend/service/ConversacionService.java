@@ -23,10 +23,10 @@ import com.nebrimatch.backend.service.mapper.MessageMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
+         // anotaciones ==>
 @Service
 @RequiredArgsConstructor
-@Slf4j
+@Slf4j // anotación de Lombok que te genera automáticamente un logger sin tener que declararlo manualmente.
 public class ConversacionService {
         // proceso ==> buscar en repository para verificar info, crear entidad, guardar, mappear a DTO, devolver al controlador
 
@@ -35,6 +35,7 @@ public class ConversacionService {
         private final MensajeRepository mensajeRepository;
         private final ConversationMapper conversationMapper;
         private final MessageMapper messageMapper;
+        // importante para websocket!!!! ==>
         private final SimpMessagingTemplate messagingTemplate;
                 // clase de Spring que te permite enviar mensajes WebSocket desde el servidor hacia los clientes.
         @Transactional
@@ -140,4 +141,10 @@ public class ConversacionService {
                                 .map(messageMapper::toMensajeDTO)
                                 .orElse(null);
         }
+
+        /* La entidad Conversacion es lo que vive en la base de datos. El frontend nunca la ve directamente:
+
+
+BD → Conversacion (entidad) → ConversacionDTO → Controller → Frontend
+Por eso todos los métodos devuelven ConversacionDTO o MensajeDTO, y al final siempre hay un mapper: */
 }

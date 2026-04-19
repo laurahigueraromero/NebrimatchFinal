@@ -8,6 +8,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    /*
+     * NotFoundException → 404 (recurso no encontrado)
+     * ConflictException → 409 (duplicado)
+     * BadRequestException → 400 (datos mal enviados)
+     * IllegalArgumentException → 400
+     * Exception → 500 (cualquier otro error)
+     */
+
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<String> handleNotFound(NotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
