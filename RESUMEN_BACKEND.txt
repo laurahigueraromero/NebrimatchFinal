@@ -243,7 +243,7 @@ ASPECTOS TÉCNICOS DESTACADOS
 - show-sql: true en desarrollo
 - Diseño bidireccional: matches y conversaciones no distinguen orden usuario1/usuario2
 - WebSocket + STOMP para mensajería en tiempo real
-- Control de permisos a nivel de servicio (no a nivel de seguridad)
+- Control de permisos a nivel de servicio (no a nivel de seguridad) ==> que esta en la capa del service
 
 
 PENDIENTE / TRABAJO FUTURO
