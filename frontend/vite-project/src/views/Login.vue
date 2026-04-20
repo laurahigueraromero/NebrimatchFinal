@@ -10,11 +10,11 @@ const password = ref('');
 const error = ref(false);
 
 const handleLogin = () => {
-  // Simulamos una validación simple para el TFG
+  // Simulamos una validación simple 
   if (email.value === 'alumno@nebrija.es' && password.value === '1234') {
     console.log("Login correcto");
     // Redirigimos al usuario a la página principal
-    router.push('/para-ti');
+    router.push('/comunidades');
   } else {
     error.value = true;
     setTimeout(() => error.value = false, 3000); // Quitamos el error a los 3 seg.
@@ -103,7 +103,7 @@ const handleLogin = () => {
   padding: 12px;
   border: 1px solid #ddd;
   border-radius: 10px;
-  box-sizing: border-box; /* Para que el padding no ensanche el input */
+  box-sizing: border-box; 
 }
 
 .btn-login {

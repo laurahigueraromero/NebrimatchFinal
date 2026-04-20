@@ -7,6 +7,15 @@ const routes = [
   { path: "/para-ti", component: ParaTi },
   { path: "/chats", component: () => import("../views/Chats.vue") },
   { path: "/perfil", component: () => import("../views/Perfil.vue") },
+  {
+    path: "/comunidades",
+    component: () => import("../views/Comunidades.vue"),
+  },
+  {
+    path: "/comunidades/:id",
+    component: () => import("../views/DetalleComunidad.vue"),
+    props: true, // Esto permite recibir el ID como una prop
+  },
 ];
 
 const router = createRouter({

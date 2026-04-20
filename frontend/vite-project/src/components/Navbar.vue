@@ -3,6 +3,9 @@
     <div class="logo">NebriMatch</div>
     <div class="links">
       <router-link to="/para-ti">Descubrir</router-link>
+      
+      <router-link to="/comunidades">Comunidades</router-link> 
+      
       <router-link to="/chats">Mensajes</router-link>
       <router-link to="/perfil">Mi Perfil</router-link>
     </div>
