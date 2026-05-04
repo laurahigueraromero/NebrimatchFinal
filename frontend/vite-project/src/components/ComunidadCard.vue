@@ -5,10 +5,9 @@ defineProps(["comunidad"]);
 
 <template>
   <div class="comunidad-card">
-    <img :src="comunidad.imagen" alt="Imagen comunidad" />
+    <img :src="comunidad.imagenComunidad" alt="Imagen comunidad" />
     <div class="info">
-      <h3>{{ comunidad.nombre }}</h3>
-      <p>{{ comunidad.miembros }} miembros</p>
+      <h3>{{ comunidad.nombreComunidad }}</h3>
       <router-link :to="'/comunidades/' + comunidad.id" class="btn-ver">
         Ver detalles
       </router-link>

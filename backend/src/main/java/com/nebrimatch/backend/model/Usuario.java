@@ -34,6 +34,9 @@ public class Usuario {
     @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
+    @Column(name = "password", nullable = false)
+    private String password;
+
     @Column(name = "descripcion", columnDefinition = "TEXT")
     private String descripcion;
 

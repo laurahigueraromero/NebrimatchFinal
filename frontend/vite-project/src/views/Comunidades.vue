@@ -1,15 +1,29 @@
 <script setup>
-import { ref, computed } from "vue";
-import { listaComunidades } from "../data/comunidades"; // Importamos la lista real
+import { ref, computed, onMounted } from "vue";
+import { comunidadService } from "../services/api";
 import ComunidadCard from "../components/ComunidadCard.vue";
 
 const searchQuery = ref("");
+const comunidades = ref([]);
+const cargando = ref(true);
+const error = ref(null);
 
-const comunidadesFiltradas = computed(() => {
-  return listaComunidades.filter((c) =>
-    c.nombre.toLowerCase().includes(searchQuery.value.toLowerCase()),
-  );
+onMounted(async () => {
+  try {
+    const respuesta = await comunidadService.obtenerTodas();
+    comunidades.value = respuesta.data;
+  } catch {
+    error.value = "No se pudieron cargar las comunidades. ¿Está el servidor arrancado?";
+  } finally {
+    cargando.value = false;
+  }
 });
+
+const comunidadesFiltradas = computed(() =>
+  comunidades.value.filter((c) =>
+    c.nombreComunidad.toLowerCase().includes(searchQuery.value.toLowerCase()),
+  ),
+);
 </script>
 
 <template>
@@ -21,7 +35,9 @@ const comunidadesFiltradas = computed(() => {
       placeholder="🔍 Buscar tecnología..."
       class="search-input"
     />
-    <div class="container">
+    <p v-if="cargando" class="estado">Cargando comunidades...</p>
+    <p v-else-if="error" class="estado error">{{ error }}</p>
+    <div v-else class="container">
       <ComunidadCard
         v-for="c in comunidadesFiltradas"
         :key="c.id"
@@ -54,5 +70,13 @@ const comunidadesFiltradas = computed(() => {
   background-color: var(--bg-card);
   color: var(--text-main);
   border: 1px solid var(--border);
+}
+.estado {
+  color: var(--text-muted);
+  margin-top: 40px;
+  font-size: 1rem;
+}
+.error {
+  color: var(--primary);
 }
 </style>

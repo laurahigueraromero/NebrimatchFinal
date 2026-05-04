@@ -3,8 +3,10 @@ package com.nebrimatch.backend.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.nebrimatch.backend.dto.LoginRequestDTO;
 import com.nebrimatch.backend.dto.UsuarioDTO;
 import com.nebrimatch.backend.model.RolUsuario;
 import com.nebrimatch.backend.model.Usuario;
@@ -20,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     // Obtener todos los usuarios
     public List<UsuarioDTO> obtenerTodos() {
@@ -69,6 +72,16 @@ public class UsuarioService {
         return toDTO(usuarioRepository.save(usuario));
     }
 
+    // Login: verifica email y contraseña
+    public UsuarioDTO login(LoginRequestDTO request) {
+        Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Credenciales incorrectas"));
+        if (!passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
+            throw new RuntimeException("Credenciales incorrectas");
+        }
+        return toDTO(usuario);
+    }
+
     // Eliminar usuario
     public void eliminar(Long id) {
         if (!usuarioRepository.existsById(id)) {
@@ -100,6 +113,7 @@ public class UsuarioService {
                 usuario.getId(),
                 usuario.getNombreUsuario(),
                 usuario.getEmail(),
+                null, // password nunca se devuelve en respuestas
                 usuario.getDescripcion(),
                 usuario.getLenguajesAEnsenar(),
                 usuario.getLenguajesAAprender(),
@@ -114,6 +128,7 @@ public class UsuarioService {
         Usuario usuario = new Usuario();
         usuario.setNombreUsuario(dto.getNombreUsuario());
         usuario.setEmail(dto.getEmail());
+        usuario.setPassword(passwordEncoder.encode(dto.getPassword()));
         usuario.setDescripcion(dto.getDescripcion());
         usuario.setLenguajesAEnsenar(dto.getLenguajesAEnsenar());
         usuario.setLenguajesAAprender(dto.getLenguajesAAprender());

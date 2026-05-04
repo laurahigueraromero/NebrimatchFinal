@@ -19,6 +19,7 @@ public class UsuarioDTO {
     private Long id;
     private String nombreUsuario;
     private String email;
+    private String password; // solo se lee en creación, nunca se devuelve
     private String descripcion;
     private String lenguajesAEnsenar;
     private String lenguajesAAprender;
