@@ -1,23 +1,27 @@
 <script setup>
 import { ref } from 'vue';
-import { useRouter } from 'vue-router'; // Para poder saltar de página
+import { useRouter } from 'vue-router';
+import { authService } from '../services/api';
 
 const router = useRouter();
 
-// Variables para el formulario
 const email = ref('');
 const password = ref('');
 const error = ref(false);
+const cargando = ref(false);
 
-const handleLogin = () => {
-  // Simulamos una validación simple 
-  if (email.value === 'alumno@nebrija.es' && password.value === '1234') {
-    console.log("Login correcto");
-    // Redirigimos al usuario a la página principal
+const handleLogin = async () => {
+  error.value = false;
+  cargando.value = true;
+  try {
+    const { data: usuario } = await authService.login(email.value, password.value);
+    localStorage.setItem('usuario', JSON.stringify(usuario));
     router.push('/comunidades');
-  } else {
+  } catch {
     error.value = true;
-    setTimeout(() => error.value = false, 3000); // Quitamos el error a los 3 seg.
+    setTimeout(() => error.value = false, 3000);
+  } finally {
+    cargando.value = false;
   }
 };
 </script>
@@ -51,7 +55,9 @@ const handleLogin = () => {
 
         <p v-if="error" class="error-msg">⚠️ Credenciales incorrectas</p>
 
-        <button type="submit" class="btn-login">Entrar</button>
+        <button type="submit" class="btn-login" :disabled="cargando">
+          {{ cargando ? 'Entrando...' : 'Entrar' }}
+        </button>
       </form>
     </div>
   </div>
