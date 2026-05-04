@@ -20,35 +20,60 @@ const comunidad = listaComunidades.find((c) => c.id === Number(props.id));
 </template>
 
 <style scoped>
-.detalle-container {
-  max-width: 600px;
-  margin: 40px auto;
-  text-align: center;
-  background: white;
-  padding: 40px;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+.detalle-container { 
+  max-width: 600px; 
+  margin: 40px auto; 
+  text-align: center; 
+  background: var(--bg-card); /* Magia: Fondo de tarjeta oscuro */
+  padding: 40px; 
+  border-radius: 20px; 
+  border: 1px solid var(--border); /* Borde sutil */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
 }
-.tech-logo {
-  width: 120px;
-  margin-bottom: 20px;
+
+.tech-logo { 
+  width: 120px; 
+  margin-bottom: 20px; 
 }
-.btn-join {
-  background: #d71820;
-  color: white;
-  border: none;
-  padding: 15px 40px;
-  border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 30px;
-  width: 100%;
+
+h1 {
+  color: var(--text-main); /* Forzamos título en blanco */
+  margin-bottom: 10px;
 }
-button {
-  color: #d71820;
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-weight: bold;
+
+.stats { 
+  color: var(--text-muted); /* Gris clarito para los miembros */
+  font-weight: 600;
+}
+
+.desc { 
+  color: var(--text-main); /* Blanco para la descripción */
+  line-height: 1.6;
+  margin-top: 20px;
+}
+
+.btn-join { 
+  background: var(--primary); 
+  color: white; 
+  border: none; 
+  padding: 15px 40px; 
+  border-radius: 10px; 
+  font-weight: bold; 
+  cursor: pointer; 
+  margin-top: 30px; 
+  width: 100%; 
+  transition: transform 0.2s;
+}
+
+.btn-join:hover {
+  transform: scale(1.02);
+}
+
+button { 
+  color: var(--primary); 
+  border: none; 
+  background: none; 
+  cursor: pointer; 
+  font-weight: bold; 
 }
 </style>

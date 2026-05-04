@@ -1,69 +1,103 @@
+<script setup>
+import { columnasFooter } from "../data/datosFooter";
+</script>
+
 <template>
   <footer class="main-footer">
-    <div class="footer-content">
-      <div class="footer-section">
-        <h3 class="footer-logo">Nebri<span>Match</span></h3>
-        <p>Conectando mentores y alumnos de la Universidad Nebrija.</p>
+    <div class="footer-columns">
+      <!-- Bucle de columnas -->
+      <div
+        class="footer-col"
+        v-for="(columna, index) in columnasFooter"
+        :key="index"
+      >
+        <h4>{{ columna.titulo }}</h4>
+        <router-link
+          v-for="enlace in columna.enlaces"
+          :key="enlace.slug"
+          :to="'/info/' + enlace.slug"
+        >
+          {{ enlace.nombre }}
+        </router-link>
       </div>
 
-      <div class="footer-section">
-        <h4>TFG 2026</h4>
-        <p>© Todos los derechos reservados</p>
+      <!-- Columna estática de redes -->
+      <div class="footer-col">
+        <h4>Redes sociales</h4>
+        <div class="social-icons">
+          <a href="#" title="Instagram"
+            ><i class="fa-brands fa-instagram"></i
+          ></a>
+          <a href="#" title="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+          <a href="#" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
+          <a href="#" title="X (Twitter)"
+            ><i class="fa-brands fa-x-twitter"></i
+          ></a>
+          <a href="#" title="GitHub"><i class="fa-brands fa-github"></i></a>
+        </div>
       </div>
     </div>
-    <div class="footer-bottom">
-      <p>Desarrollado con Vue 3 + Spring Boot</p>
+
+    <div class="footer-bottom-bar">
+      <p>© 2026 NebriMatch - TFG Universidad Nebrija</p>
     </div>
   </footer>
 </template>
 
 <style scoped>
 .main-footer {
-  background-color: #ffffff;
-  border-top: 1px solid #eee;
-  padding: 40px 20px 20px 20px;
-  color: #444;
-  margin-top: auto; /* Esto ayuda a que se quede abajo */
+  background: #000000; /* Fondo negro puro */
+  border-top: 1px solid var(--border);
+  padding: 60px 5% 20px 5%;
+  margin-top: auto;
 }
 
-.footer-content {
+.footer-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 40px;
   max-width: 1200px;
   margin: 0 auto;
+  margin-bottom: 40px;
+}
+
+.footer-col h4 {
+  color: white;
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+}
+
+.footer-col a {
+  display: block;
+  color: var(--text-muted);
+  text-decoration: none;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+}
+
+.footer-col a:hover {
+  color: var(--primary); /* Rojo Nebrija al pasar el ratón */
+}
+
+.social-icons {
   display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 20px;
+  gap: 15px;
 }
 
-.footer-section {
-  flex: 1;
-  min-width: 250px;
-}
-
-.footer-logo {
-  color: #d71820; /* Rojo Nebrija */
+.social-icons a {
   font-size: 1.5rem;
-  margin-bottom: 10px;
+  filter: grayscale(100%);
+}
+.social-icons a:hover {
+  filter: grayscale(0%);
 }
 
-.footer-logo span {
-  color: #222;
-  font-weight: 300;
-}
-
-.footer-section h4 {
-  margin-bottom: 15px;
-  text-transform: uppercase;
-  font-size: 0.9rem;
-  letter-spacing: 1px;
-}
-
-.footer-bottom {
-  text-align: center;
-  margin-top: 30px;
+.footer-bottom-bar {
+  border-top: 1px solid var(--border);
   padding-top: 20px;
-  border-top: 1px solid #f0f0f0;
-  font-size: 0.8rem;
-  color: #999;
+  text-align: center;
+  color: #666;
+  font-size: 0.85rem;
 }
 </style>

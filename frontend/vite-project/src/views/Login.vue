@@ -62,27 +62,29 @@ const handleLogin = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 90vh;
+  min-height: 80vh;
 }
 
 .login-card {
-  background: white;
-  padding: 40px;
+  background: var(--bg-card);
+  padding: 50px 40px;
   border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  border: 1px solid var(--border);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.5);
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   text-align: center;
 }
 
 .logo {
-  color: #d71820;
+  color: var(--primary);
   font-size: 2.5rem;
   margin-bottom: 10px;
 }
+.logo span { color: var(--text-main); }
 
 .subtitle {
-  color: #666;
+  color: var(--text-muted);
   margin-bottom: 30px;
 }
 
@@ -93,39 +95,50 @@ const handleLogin = () => {
 
 .input-group label {
   display: block;
-  font-weight: bold;
-  margin-bottom: 5px;
-  color: #444;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }
 
 .input-group input {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  box-sizing: border-box; 
+  padding: 15px;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-main);
+  font-size: 1rem;
+  transition: all 0.3s;
+  outline: none;
+}
+
+.input-group input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(215, 24, 32, 0.2);
 }
 
 .btn-login {
   width: 100%;
   padding: 15px;
-  background: #d71820;
+  margin-top: 10px;
+  background: linear-gradient(to right, var(--primary), #b5141a);
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 1.1rem;
   font-weight: bold;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: transform 0.2s;
 }
 
 .btn-login:hover {
-  background: #b5141a;
+  transform: scale(1.02);
 }
 
 .error-msg {
-  color: #d71820;
-  font-weight: bold;
+  color: var(--primary-hover);
+  font-size: 0.9rem;
   margin-bottom: 15px;
 }
 </style>
