@@ -7,7 +7,7 @@ const api = axios.create({
     withCredentials: true,
 })
 
-// ── AUTH ──────────────────────────────────────────────────
+// ── AUTH ────────────────────────────────────────────────── +
 export const authService = {
     login: (email, password) =>
         api.post('/api/auth/login', { email, password }),
@@ -92,6 +92,21 @@ export const comunidadService = {
 
     eliminar: (idComunidad, idSolicitante) =>
         api.delete(`/api/comunidades/${idComunidad}`, { params: { idSolicitante } }),
+}
+
+// ── MEMBRESÍA COMUNIDADES ─────────────────────────────────
+export const membresiaService = {
+    unirse: (comunidadId, usuarioId) =>
+        api.post(`/api/comunidades/${comunidadId}/unirse`, null, { params: { usuarioId } }),
+
+    salir: (comunidadId, usuarioId) =>
+        api.delete(`/api/comunidades/${comunidadId}/salir`, { params: { usuarioId } }),
+
+    esMiembro: (comunidadId, usuarioId) =>
+        api.get(`/api/comunidades/${comunidadId}/esMiembro`, { params: { usuarioId } }),
+
+    contarMiembros: (comunidadId) =>
+        api.get(`/api/comunidades/${comunidadId}/miembros/count`),
 }
 
 export default api

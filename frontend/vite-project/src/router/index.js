@@ -1,21 +1,20 @@
 import { createRouter, createWebHistory } from "vue-router";
-import ParaTi from "../views/ParaTi.vue";
-import Login from "../views/Login.vue";
+
 
 const routes = [
   // Páginas externas (sin menú)
   { path: "/", component: () => import("../views/Landing.vue") },
-  { path: "/login", component: Login },
-  
+  { path: "/login", component: () => import("../views/Login.vue") },
+
   // La ruta dinámica para todas las páginas del Footer (Privacidad, Condiciones, etc.)
-  { 
-    path: "/info/:slug", 
+  {
+    path: "/info/:slug",
     component: () => import("../views/PaginaInformativa.vue"),
-    props: true 
+    props: true,
   },
 
   // Páginas internas de la App (con menú)
-  { path: "/para-ti", component: ParaTi },
+  { path: "/para-ti", component: () => import("../views/ParaTi.vue") },
   { path: "/chats", component: () => import("../views/Chats.vue") },
   { path: "/perfil", component: () => import("../views/Perfil.vue") },
   {

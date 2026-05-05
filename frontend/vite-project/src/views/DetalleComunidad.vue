@@ -1,22 +1,64 @@
 <script setup>
-import { ref, onMounted } from "vue";
-import { comunidadService } from "../services/api";
+import { ref, onMounted, computed } from "vue";
+import { comunidadService, membresiaService } from "../services/api";
 
 const props = defineProps(["id"]);
 
 const comunidad = ref(null);
 const cargando = ref(true);
 const error = ref(null);
+const miembros = ref(0);
+const esMiembro = ref(false);
+const cargandoBoton = ref(false);
+
+const usuarioActual = JSON.parse(localStorage.getItem("usuario"));
 
 onMounted(async () => {
   try {
-    const respuesta = await comunidadService.obtenerPorId(props.id);
-    comunidad.value = respuesta.data;
+    const [resComunidad, resMiembros] = await Promise.all([
+      comunidadService.obtenerPorId(props.id),
+      membresiaService.contarMiembros(props.id),
+    ]);
+    comunidad.value = resComunidad.data;
+    miembros.value = resMiembros.data;
+
+    if (usuarioActual) {
+      const resMembresia = await membresiaService.esMiembro(props.id, usuarioActual.id);
+      esMiembro.value = resMembresia.data;
+    }
   } catch {
     error.value = "No se encontró la comunidad.";
   } finally {
     cargando.value = false;
   }
+});
+
+async function toggleMembresia() {
+  if (!usuarioActual) {
+    alert("Debes iniciar sesión para unirte a una comunidad.");
+    return;
+  }
+  cargandoBoton.value = true;
+  try {
+    if (esMiembro.value) {
+      await membresiaService.salir(props.id, usuarioActual.id);
+      esMiembro.value = false;
+      miembros.value--;
+    } else {
+      await membresiaService.unirse(props.id, usuarioActual.id);
+      esMiembro.value = true;
+      miembros.value++;
+    }
+  } catch (e) {
+    alert(e.response?.data || "Ha ocurrido un error.");
+  } finally {
+    cargandoBoton.value = false;
+  }
+}
+
+const textoBoton = computed(() => {
+  if (cargandoBoton.value) return "Cargando...";
+  return esMiembro.value ? "Salir de la comunidad" : "Unirme al repositorio";
 });
 </script>
 
@@ -32,8 +74,16 @@ onMounted(async () => {
         <img :src="comunidad.imagenComunidad" class="tech-logo" />
         <h1>{{ comunidad.nombreComunidad }}</h1>
       </div>
+      <p class="stats">👥 {{ miembros }} programadores unidos</p>
       <p class="desc">{{ comunidad.descripcionComunidad }}</p>
-      <button class="btn-join">Unirme al repositorio</button>
+      <button
+        class="btn-join"
+        :class="{ salir: esMiembro }"
+        :disabled="cargandoBoton"
+        @click="toggleMembresia"
+      >
+        {{ textoBoton }}
+      </button>
     </template>
   </div>
 </template>
@@ -60,6 +110,11 @@ h1 {
   margin-bottom: 10px;
 }
 
+.stats {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
 .desc {
   color: var(--text-main);
   line-height: 1.6;
@@ -76,14 +131,25 @@ h1 {
   cursor: pointer;
   margin-top: 30px;
   width: 100%;
-  transition: transform 0.2s;
+  transition: transform 0.2s, background 0.2s;
 }
 
-.btn-join:hover {
+.btn-join:hover:not(:disabled) {
   transform: scale(1.02);
 }
 
-button {
+.btn-join.salir {
+  background: transparent;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+}
+
+.btn-join:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button:not(.btn-join) {
   color: var(--primary);
   border: none;
   background: none;
