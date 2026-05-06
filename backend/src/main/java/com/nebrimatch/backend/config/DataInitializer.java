@@ -5,8 +5,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.nebrimatch.backend.model.Comunidad;
+import com.nebrimatch.backend.model.Lenguaje;
 import com.nebrimatch.backend.model.Usuario;
 import com.nebrimatch.backend.repository.ComunidadRepository;
+import com.nebrimatch.backend.repository.LenguajeRepository;
 import com.nebrimatch.backend.repository.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -17,7 +19,13 @@ public class DataInitializer implements CommandLineRunner {
 
     private final ComunidadRepository comunidadRepository;
     private final UsuarioRepository usuarioRepository;
+    private final LenguajeRepository lenguajeRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+
+    private static final String[] LENGUAJES = {
+        "Vue.js", "React", "Angular", "Java", "Python",
+        "Node.js", "Spring Boot", "C++", "Go", "Docker"
+    };
 
     private static final String[][] TECHS = {
         {"Vue.js",     "vuejs"},
@@ -34,6 +42,21 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        sembrarLenguajes();
+        sembrarComunidades();
+    }
+
+    private void sembrarLenguajes() {
+        for (String nombre : LENGUAJES) {
+            if (!lenguajeRepository.existsByNombre(nombre)) {
+                Lenguaje l = new Lenguaje();
+                l.setNombre(nombre);
+                lenguajeRepository.save(l);
+            }
+        }
+    }
+
+    private void sembrarComunidades() {
         if (comunidadRepository.count() > 0) return;
 
         Usuario sistema = usuarioRepository.findByEmail("sistema@nebrimatch.com")

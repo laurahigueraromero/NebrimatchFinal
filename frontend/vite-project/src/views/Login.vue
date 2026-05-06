@@ -1,58 +1,89 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import ThemeToggle from "../components/ThemeToggle.vue"; // Importamos la palanquita
+import ThemeToggle from "../components/ThemeToggle.vue";
+import { authService, usuarioService, lenguajeService } from "../services/api";
 
 const router = useRouter();
 
-// Variable para alternar entre Iniciar Sesión (true) y Registro (false)
 const isLogin = ref(true);
 
 // --- ESTADOS PARA EL LOGIN ---
 const email = ref("");
 const password = ref("");
-const error = ref(false);
+const error = ref("");
+const cargandoLogin = ref(false);
 
 // --- ESTADOS PARA EL REGISTRO ---
+const regNombre = ref("");
 const regEmail = ref("");
 const regPassword = ref("");
-const regRole = ref(""); // Guardará 'estudiante' o 'mentor'
-const regLanguages = ref([]); // Vue guardará aquí los lenguajes seleccionados en formato Array
+const regRole = ref("");
+const regLanguages = ref([]);
+const errorReg = ref("");
+const cargandoReg = ref(false);
 
-// Lista de lenguajes disponibles para seleccionar
-const lenguajesDisponibles = [
-  "Vue.js",
-  "React",
-  "Angular",
-  "Java",
-  "Python",
-  "Node.js",
-  "Spring Boot",
-  "C++",
-  "Go",
-  "Docker",
-];
+const lenguajesDisponibles = ref([]);
 
-// Función para Iniciar Sesión
-const handleLogin = () => {
-  if (email.value === "alumno@nebrija.es" && password.value === "1234") {
-    router.push("/comunidades");
-  } else {
-    error.value = true;
+onMounted(async () => {
+  try {
+    const res = await lenguajeService.obtenerTodos();
+    lenguajesDisponibles.value = res.data;
+  } catch {
+    // Si falla, usamos la lista local como fallback
+    lenguajesDisponibles.value = [
+      "Vue.js", "React", "Angular", "Java", "Python",
+      "Node.js", "Spring Boot", "C++", "Go", "Docker",
+    ];
   }
-};
+});
 
-// Función para Registrarse
-const handleRegister = () => {
-  console.log("Nuevo usuario registrado:", {
-    email: regEmail.value,
-    password: regPassword.value,
-    rol: regRole.value,
-    lenguajes: regLanguages.value,
-  });
+async function handleLogin() {
+  error.value = "";
+  cargandoLogin.value = true;
+  try {
+    const res = await authService.login(email.value, password.value);
+    localStorage.setItem("usuario", JSON.stringify(res.data));
+    router.push("/comunidades");
+  } catch {
+    error.value = "Credenciales incorrectas. Intenta de nuevo.";
+  } finally {
+    cargandoLogin.value = false;
+  }
+}
 
-  router.push("/comunidades");
-};
+async function handleRegister() {
+  errorReg.value = "";
+  if (!regRole.value) {
+    errorReg.value = "Selecciona un rol.";
+    return;
+  }
+  if (regLanguages.value.length === 0) {
+    errorReg.value = "Selecciona al menos un lenguaje.";
+    return;
+  }
+
+  cargandoReg.value = true;
+  const lenguajesStr = regLanguages.value.join(",");
+
+  try {
+    const res = await usuarioService.crear({
+      nombreUsuario: regNombre.value,
+      email: regEmail.value,
+      password: regPassword.value,
+      descripcion: "",
+      lenguajesAEnsenar: regRole.value === "profesor" ? lenguajesStr : "",
+      lenguajesAAprender: regRole.value === "estudiante" ? lenguajesStr : "",
+      rol: regRole.value,
+    });
+    localStorage.setItem("usuario", JSON.stringify(res.data));
+    router.push("/comunidades");
+  } catch (e) {
+    errorReg.value = e.response?.data || "Error al registrarse. Inténtalo de nuevo.";
+  } finally {
+    cargandoReg.value = false;
+  }
+}
 </script>
 
 <template>
@@ -100,17 +131,27 @@ const handleRegister = () => {
             />
           </div>
 
-          <p v-if="error" class="error-msg">
-            Credenciales incorrectas. Intenta de nuevo.
-          </p>
+          <p v-if="error" class="error-msg">{{ error }}</p>
 
-          <button type="submit" class="btn-primary">Entrar</button>
+          <button type="submit" class="btn-primary" :disabled="cargandoLogin">
+            {{ cargandoLogin ? "Entrando..." : "Entrar" }}
+          </button>
         </form>
 
         <!-- ========================================== -->
         <!-- FORMULARIO DE REGISTRO                     -->
         <!-- ========================================== -->
         <form v-else @submit.prevent="handleRegister" class="form-content">
+          <div class="input-group">
+            <label>Nombre de usuario</label>
+            <input
+              v-model="regNombre"
+              type="text"
+              placeholder="tu_nombre"
+              required
+            />
+          </div>
+
           <div class="input-group">
             <label>Correo electrónico</label>
             <input
@@ -136,45 +177,39 @@ const handleRegister = () => {
             <label>¿Qué vienes a hacer a NebriMatch?</label>
             <div class="role-selector">
               <label class="role-option">
-                <input
-                  v-model="regRole"
-                  type="radio"
-                  value="estudiante"
-                  required
-                />
+                <input v-model="regRole" type="radio" value="estudiante" />
                 <span>Aprender (Estudiante)</span>
               </label>
               <label class="role-option">
-                <input v-model="regRole" type="radio" value="mentor" required />
+                <input v-model="regRole" type="radio" value="profesor" />
                 <span>Enseñar (Mentor)</span>
               </label>
             </div>
           </div>
 
-          <!-- SELECCIÓN DE LENGUAJES (Solo aparece si ya ha elegido un rol) -->
+          <!-- SELECCIÓN DE LENGUAJES -->
           <div class="input-group" v-if="regRole">
             <label class="highlight-label">
               ¿Qué lenguajes quieres
-              {{ regRole === "mentor" ? "enseñar" : "aprender" }}?
+              {{ regRole === "profesor" ? "enseñar" : "aprender" }}?
             </label>
-
             <div class="languages-grid">
               <label
                 v-for="lenguaje in lenguajesDisponibles"
                 :key="lenguaje"
                 class="lang-checkbox"
               >
-                <input
-                  v-model="regLanguages"
-                  type="checkbox"
-                  :value="lenguaje"
-                />
+                <input v-model="regLanguages" type="checkbox" :value="lenguaje" />
                 <span>{{ lenguaje }}</span>
               </label>
             </div>
           </div>
 
-          <button type="submit" class="btn-primary">Registrarme</button>
+          <p v-if="errorReg" class="error-msg">{{ errorReg }}</p>
+
+          <button type="submit" class="btn-primary" :disabled="cargandoReg">
+            {{ cargandoReg ? "Registrando..." : "Registrarme" }}
+          </button>
         </form>
 
         <!-- BOTÓN PARA CAMBIAR ENTRE LOGIN Y REGISTRO -->

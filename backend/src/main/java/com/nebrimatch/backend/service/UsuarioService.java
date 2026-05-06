@@ -10,6 +10,7 @@ import com.nebrimatch.backend.dto.LoginRequestDTO;
 import com.nebrimatch.backend.dto.UsuarioDTO;
 import com.nebrimatch.backend.model.RolUsuario;
 import com.nebrimatch.backend.model.Usuario;
+import com.nebrimatch.backend.repository.RolUsuarioRepository;
 import com.nebrimatch.backend.repository.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final RolUsuarioRepository rolUsuarioRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
     // Obtener todos los usuarios
@@ -57,6 +59,14 @@ public class UsuarioService {
 
         Usuario usuario = toEntity(dto);
         Usuario guardado = usuarioRepository.save(usuario);
+
+        if (dto.getRol() != null) {
+            RolUsuario rol = new RolUsuario();
+            rol.setRol(dto.getRol());
+            rol.setUsuario(guardado);
+            rolUsuarioRepository.save(rol);
+        }
+
         return toDTO(guardado);
     }
 

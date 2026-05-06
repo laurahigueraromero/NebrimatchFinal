@@ -1,0 +1,98 @@
+=========================================================
+  CARPETA CONFIG - NebriMatch Backend
+  Archivos de configuración del proyecto Spring Boot
+=========================================================
+
+La carpeta "config" contiene clases que configuran el comportamiento
+general del servidor. No tienen lógica de negocio — definen las REGLAS
+de cómo funciona la aplicación.
+
+
+---------------------------------------------------------
+1. SecurityConfig.java
+---------------------------------------------------------
+¿Qué hace?
+  Controla la seguridad de toda la API: quién puede acceder,
+  desde dónde, y cómo se gestionan las sesiones.
+
+Puntos clave:
+  - CSRF desactivado: no es necesario en APIs REST porque no
+    usamos formularios HTML tradicionales ni sesiones de navegador.
+
+  - CORS configurado: permite que el frontend (http://localhost:5173)
+    pueda hacer peticiones al backend (http://localhost:8080).
+    Sin esto, el navegador bloquearía todas las llamadas entre
+    los dos servidores.
+    Métodos permitidos: GET, POST, PUT, DELETE, OPTIONS.
+
+  - Sesiones STATELESS: el servidor no recuerda al usuario entre
+    peticiones. Cada petición es independiente (propio de APIs REST).
+
+  - Todos los endpoints son públicos por ahora (.anyRequest().permitAll()).
+    En el futuro se restringirían los que requieran login.
+
+  - BCryptPasswordEncoder: define el algoritmo para cifrar contraseñas.
+    Se inyecta en otros servicios (como UsuarioService) para hashear
+    y verificar passwords de forma segura.
+
+
+---------------------------------------------------------
+2. WebSocketConfig.java
+---------------------------------------------------------
+¿Qué hace?
+  Configura el sistema de mensajería en tiempo real (WebSocket)
+  que usa el chat de la aplicación.
+
+Puntos clave:
+  - Habilita STOMP sobre WebSocket: protocolo de mensajería
+    que permite comunicación bidireccional cliente-servidor
+    (sin necesidad de recargar la página).
+
+  - Broker de mensajes con dos canales:
+      /topic  → mensajes para múltiples usuarios (como un chat de grupo)
+      /queue  → mensajes privados entre dos usuarios
+
+  - Prefijo /app: las peticiones del cliente que empiezan por /app
+    son procesadas por los controladores de Spring antes de
+    ser enviadas.
+
+  - Endpoint /ws con SockJS: punto de conexión al que se conecta
+    el frontend para abrir el canal WebSocket. SockJS es un
+    fallback por si el navegador no soporta WebSocket nativo.
+
+
+---------------------------------------------------------
+3. DataInitializer.java
+---------------------------------------------------------
+¿Qué hace?
+  Se ejecuta automáticamente una sola vez al arrancar el servidor
+  y puebla la base de datos con datos iniciales necesarios
+  para que la aplicación funcione.
+
+Puntos clave:
+  - Siembra los 10 lenguajes disponibles (Vue.js, React, Angular,
+    Java, Python, Node.js, Spring Boot, C++, Go, Docker) en la
+    tabla "lenguaje". Si ya existen, no los duplica.
+
+  - Siembra 50 comunidades de programación en la tabla "comunidad".
+    Solo lo hace si la tabla está vacía, para no duplicar datos
+    en cada reinicio del servidor.
+
+  - Para crear las comunidades necesita un "creador", por lo que
+    crea un usuario especial llamado "Sistema" (sistema@nebrimatch.com)
+    que actúa como propietario de las comunidades iniciales.
+
+  - Implementa CommandLineRunner: interfaz de Spring Boot que
+    garantiza que el método run() se ejecute justo después de
+    que el contexto de la aplicación esté listo.
+
+
+=========================================================
+  RESUMEN RÁPIDO
+=========================================================
+
+  SecurityConfig.java    → Seguridad, CORS y cifrado de passwords
+  WebSocketConfig.java   → Chat en tiempo real
+  DataInitializer.java   → Datos iniciales en la base de datos
+
+=========================================================

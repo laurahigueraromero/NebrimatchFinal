@@ -94,6 +94,12 @@ export const comunidadService = {
         api.delete(`/api/comunidades/${idComunidad}`, { params: { idSolicitante } }),
 }
 
+// ── LENGUAJES ─────────────────────────────────────────────
+export const lenguajeService = {
+    obtenerTodos: () =>
+        api.get('/api/lenguajes'),
+}
+
 // ── MEMBRESÍA COMUNIDADES ─────────────────────────────────
 export const membresiaService = {
     unirse: (comunidadId, usuarioId) =>

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from "vue";
 
-// Nuestros datos de prueba simulando el backend
+// mentores ya creados ==>
 const mentoresData = ref([
   {
     id: 1,
