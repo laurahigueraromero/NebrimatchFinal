@@ -1,5 +1,5 @@
 <script setup>
-// ¡Qué limpio queda esto ahora!
+import ThemeToggle from "../components/ThemeToggle.vue";
 </script>
 
 <template>
@@ -7,9 +7,14 @@
     <!-- CABECERA DE LA LANDING -->
     <header class="landing-header">
       <div class="logo">Nebri<span>Match</span></div>
-      <router-link to="/login" class="btn-login-outline"
-        >Iniciar Sesión</router-link
-      >
+
+      <!-- Agrupamos la palanquita y el botón de Login a la derecha -->
+      <div class="header-actions">
+        <ThemeToggle />
+        <router-link to="/login" class="btn-login-outline"
+          >Iniciar Sesión</router-link
+        >
+      </div>
     </header>
 
     <main class="main-content">
@@ -66,11 +71,10 @@
 <style scoped>
 /* Estilos Generales Landing */
 .landing-page {
-  background: linear-gradient(135deg, #111111 0%, #000000 100%);
+  background: linear-gradient(135deg, var(--bg-main) 0%, #000000 100%);
   display: flex;
   flex-direction: column;
-  color: white;
-  /* Quitamos el min-height: 100vh de aquí porque ahora lo gestiona App.vue */
+  color: var(--text-main);
 }
 
 /* Header */
@@ -86,21 +90,28 @@
   color: var(--primary);
 }
 .logo span {
-  color: white;
+  color: var(--text-main);
 }
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
 .btn-login-outline {
   padding: 10px 25px;
   background: transparent;
-  color: white;
-  border: 2px solid white;
+  color: var(--text-main);
+  border: 2px solid var(--text-main);
   border-radius: 30px;
   text-decoration: none;
   font-weight: bold;
   transition: all 0.3s;
 }
 .btn-login-outline:hover {
-  background: white;
-  color: #1a1a1a;
+  background: var(--text-main);
+  color: var(--bg-main);
 }
 
 /* Hero */
@@ -123,7 +134,7 @@
 }
 .subtitle {
   font-size: 1.2rem;
-  color: #aaa;
+  color: var(--text-muted);
   max-width: 600px;
   margin-bottom: 40px;
   line-height: 1.6;
@@ -151,7 +162,7 @@
 .section-title {
   font-size: 2.5rem;
   margin-bottom: 50px;
-  color: #fff;
+  color: var(--text-main);
 }
 .cards-grid {
   display: grid;
@@ -161,8 +172,8 @@
   margin: 0 auto;
 }
 .info-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   padding: 40px 30px;
   border-radius: 20px;
   text-align: left;
@@ -172,7 +183,6 @@
 }
 .info-card:hover {
   transform: translateY(-10px);
-  background: rgba(255, 255, 255, 0.05);
   border-color: rgba(215, 24, 32, 0.5);
 }
 .icon {
@@ -182,10 +192,10 @@
 .info-card h3 {
   font-size: 1.5rem;
   margin-bottom: 15px;
-  color: #fff;
+  color: var(--text-main);
 }
 .info-card p {
-  color: #aaa;
+  color: var(--text-muted);
   line-height: 1.6;
 }
 </style>

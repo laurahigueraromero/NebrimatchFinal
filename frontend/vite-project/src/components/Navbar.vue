@@ -1,11 +1,20 @@
+<script setup>
+// Solo importamos el nuevo componente
+import ThemeToggle from "./ThemeToggle.vue";
+</script>
+
 <template>
   <nav class="navbar">
     <div class="logo">Nebri<span>Match</span></div>
+
     <div class="links">
       <router-link to="/comunidades">Comunidades</router-link>
       <router-link to="/para-ti">Descubrir</router-link>
       <router-link to="/chats">Mensajes</router-link>
       <router-link to="/perfil">Mi Perfil</router-link>
+
+      <!-- ENCHUFAMOS LA PALANQUITA AQUÍ -->
+      <ThemeToggle class="toggle-spacing" />
     </div>
   </nav>
 </template>
@@ -16,7 +25,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 15px 40px;
-  background-color: #0a0a0a; /* Muy oscuro para diferenciarlo del fondo */
+  background-color: var(--bg-card);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
@@ -32,6 +41,11 @@
   color: var(--text-main);
 }
 
+.links {
+  display: flex;
+  align-items: center;
+}
+
 .links a {
   margin-left: 25px;
   text-decoration: none;
@@ -41,12 +55,13 @@
   transition: color 0.3s;
 }
 
-.links a:hover {
-  color: var(--text-main);
+.links a:hover,
+.router-link-active {
+  color: var(--primary);
 }
 
-/* El enlace en el que estamos actualmente se pone rojo */
-.router-link-active {
-  color: var(--primary) !important;
+/* Espacio extra para separar la palanquita de los enlaces */
+.toggle-spacing {
+  margin-left: 30px;
 }
 </style>
