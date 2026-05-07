@@ -32,14 +32,37 @@ onMounted(async () => {
   } catch {
     // Si falla, usamos la lista local como fallback
     lenguajesDisponibles.value = [
-      "Vue.js", "React", "Angular", "Java", "Python",
-      "Node.js", "Spring Boot", "C++", "Go", "Docker",
+      "Vue.js",
+      "React",
+      "Angular",
+      "Java",
+      "Python",
+      "Node.js",
+      "Spring Boot",
+      "C++",
+      "Go",
+      "Docker",
     ];
   }
 });
 
 async function handleLogin() {
   error.value = "";
+
+  // ==========================================
+  // BYPASS DE DESARROLLO (BORRAR LUEGO)
+  // ==========================================
+  if (email.value === "admin@nebrija.es" && password.value === "1234") {
+    // Simulamos que el backend nos ha devuelto un usuario válido
+    localStorage.setItem(
+      "usuario",
+      JSON.stringify({ nombre: "Espe Dev", rol: "estudiante" }),
+    );
+    router.push("/comunidades");
+    return; // Cortamos la función aquí para que no ejecute el try/catch de abajo
+  }
+  // ==========================================
+
   cargandoLogin.value = true;
   try {
     const res = await authService.login(email.value, password.value);
@@ -79,7 +102,8 @@ async function handleRegister() {
     localStorage.setItem("usuario", JSON.stringify(res.data));
     router.push("/comunidades");
   } catch (e) {
-    errorReg.value = e.response?.data || "Error al registrarse. Inténtalo de nuevo.";
+    errorReg.value =
+      e.response?.data || "Error al registrarse. Inténtalo de nuevo.";
   } finally {
     cargandoReg.value = false;
   }
@@ -88,7 +112,19 @@ async function handleRegister() {
 
 <template>
   <div class="login-page-wrapper">
-    <!-- NUEVA CABECERA DEL LOGIN -->
+    <div
+      style="
+        background-color: #ff9800;
+        color: white;
+        text-align: center;
+        padding: 10px;
+        font-weight: bold;
+        font-size: 0.9rem;
+      "
+    >
+      🛠️ MODO DEV: Usa "admin@nebrija.es" y clave "1234" para entrar sin base de
+      datos.
+    </div>
     <header class="top-header">
       <router-link to="/" class="btn-volver">← Volver al inicio</router-link>
       <ThemeToggle />
@@ -98,7 +134,6 @@ async function handleRegister() {
       <div class="login-card">
         <h1 class="logo">Nebri<span>Match</span></h1>
 
-        <!-- TÍTULO DINÁMICO -->
         <p class="subtitle">
           {{
             isLogin
@@ -107,9 +142,6 @@ async function handleRegister() {
           }}
         </p>
 
-        <!-- ========================================== -->
-        <!-- FORMULARIO DE INICIO DE SESIÓN             -->
-        <!-- ========================================== -->
         <form v-if="isLogin" @submit.prevent="handleLogin" class="form-content">
           <div class="input-group">
             <label>Correo institucional</label>
@@ -138,9 +170,6 @@ async function handleRegister() {
           </button>
         </form>
 
-        <!-- ========================================== -->
-        <!-- FORMULARIO DE REGISTRO                     -->
-        <!-- ========================================== -->
         <form v-else @submit.prevent="handleRegister" class="form-content">
           <div class="input-group">
             <label>Nombre de usuario</label>
@@ -172,7 +201,6 @@ async function handleRegister() {
             />
           </div>
 
-          <!-- SELECCIÓN DE ROL -->
           <div class="input-group">
             <label>¿Qué vienes a hacer a NebriMatch?</label>
             <div class="role-selector">
@@ -187,7 +215,6 @@ async function handleRegister() {
             </div>
           </div>
 
-          <!-- SELECCIÓN DE LENGUAJES -->
           <div class="input-group" v-if="regRole">
             <label class="highlight-label">
               ¿Qué lenguajes quieres
@@ -199,7 +226,11 @@ async function handleRegister() {
                 :key="lenguaje"
                 class="lang-checkbox"
               >
-                <input v-model="regLanguages" type="checkbox" :value="lenguaje" />
+                <input
+                  v-model="regLanguages"
+                  type="checkbox"
+                  :value="lenguaje"
+                />
                 <span>{{ lenguaje }}</span>
               </label>
             </div>
@@ -212,7 +243,6 @@ async function handleRegister() {
           </button>
         </form>
 
-        <!-- BOTÓN PARA CAMBIAR ENTRE LOGIN Y REGISTRO -->
         <div class="toggle-section">
           <p v-if="isLogin">
             ¿No tienes cuenta?
@@ -310,7 +340,8 @@ async function handleRegister() {
 }
 
 .input-group input[type="email"],
-.input-group input[type="password"] {
+.input-group input[type="password"],
+.input-group input[type="text"] {
   width: 100%;
   padding: 15px;
   background: var(--bg-main);

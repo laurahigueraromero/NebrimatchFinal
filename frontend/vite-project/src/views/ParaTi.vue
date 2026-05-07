@@ -1,7 +1,7 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref } from "vue";
 
-// mentores ya creados ==>
+// --- DATOS FALSOS ---
 const mentoresData = ref([
   {
     id: 1,
@@ -31,65 +31,111 @@ const mentoresData = ref([
     rol: "DevOps & Docker",
     enLinea: true,
   },
+  {
+    id: 5,
+    iniciales: "LM",
+    nombre: "Laura M.",
+    rol: "Bases de Datos",
+    enLinea: true,
+  },
+  {
+    id: 6,
+    iniciales: "SP",
+    nombre: "Sergio P.",
+    rol: "React Native",
+    enLinea: false,
+  },
 ]);
 
 const currentIndex = ref(0);
-const swipeDirection = ref(null); // Guardará 'left' o 'right' para la animación CSS
+const swipeDirection = ref(null);
 
-// Variable inteligente para saber qué tarjeta toca mostrar
-const currentMentor = computed(() => mentoresData.value[currentIndex.value]);
+// Variable para controlar si el ratón está sobre la carta de arriba
+const isTopCardHovered = ref(false);
 
-// Función para manejar el clic en los botones
+// Función que calcula el estilo de la pila de profundidad (el efecto que ya teníamos)
+const getDepthCardStyle = (index) => {
+  const offset = index - currentIndex.value;
+
+  if (offset < 0) return { display: "none" }; // Ya pasaron
+
+  // Carta Principal (Índice Z más alto)
+  if (offset === 0) {
+    return {
+      zIndex: 10,
+      transform: "scale(1) translateY(0)",
+      opacity: 1,
+      filter: "blur(0px)",
+    };
+  }
+
+  // Cartas de reserva (Pila de profundidad detrás)
+  if (offset > 0 && offset <= 2) {
+    return {
+      zIndex: 8 - offset, // zIndex 7 y 6 (detrás del efecto de abanico que será zIndex 9)
+      transform: `scale(${1 - offset * 0.06}) translateY(${offset * 25}px)`,
+      opacity: 1 - offset * 0.3,
+      filter: `blur(${offset * 2}px)`,
+      pointerEvents: "none",
+    };
+  }
+
+  return { display: "none" };
+};
+
+// Función para deslizar
 const handleSwipe = (direction) => {
-  swipeDirection.value = direction; // Dispara la clase CSS
+  // Cuando deslizamos, quitamos el efecto de abanico inmediatamente
+  isTopCardHovered.value = false;
+  swipeDirection.value = direction;
 
-  // Esperamos 300ms a que termine la animación antes de cambiar de usuario
   setTimeout(() => {
     currentIndex.value++;
-    swipeDirection.value = null; // Reiniciamos la posición para la siguiente tarjeta
+    swipeDirection.value = null;
   }, 300);
 };
 
-// Función para reiniciar cuando se acaban las tarjetas (ideal para probar en el TFG)
 const resetCards = () => {
+  isTopCardHovered.value = false;
   currentIndex.value = 0;
 };
 </script>
 
 <template>
   <div class="para-ti-page">
-    <h1 class="page-title">NebriMatch TFG</h1>
+    <h1 class="page-title">Descubrir Mentores</h1>
 
-    <!-- Contenedor de la Tarjeta (Solo se muestra si hay mentores en la lista) -->
-    <div class="card-container" v-if="currentMentor">
+    <div
+      class="stack-container"
+      :class="{ 'is-fanning': isTopCardHovered }"
+      v-if="currentIndex < mentoresData.length"
+    >
       <div
+        v-for="(mentor, index) in mentoresData"
+        :key="mentor.id"
         class="swipe-card"
         :class="{
-          'swipe-left': swipeDirection === 'left',
-          'swipe-right': swipeDirection === 'right',
+          'is-top': index === currentIndex,
+          'swipe-left': index === currentIndex && swipeDirection === 'left',
+          'swipe-right': index === currentIndex && swipeDirection === 'right',
         }"
+        :style="getDepthCardStyle(index)"
+        @mouseenter="index === currentIndex ? (isTopCardHovered = true) : null"
+        @mouseleave="index === currentIndex ? (isTopCardHovered = false) : null"
       >
-        <!-- MITAD SUPERIOR (ROJA) -->
         <div class="card-top">
-          <!-- Etiqueta de estado -->
-          <span v-if="currentMentor.enLinea" class="badge-online"
-            >● En línea</span
-          >
+          <span v-if="mentor.enLinea" class="badge-online">● En línea</span>
           <span v-else class="badge-offline">● Desconectado</span>
-
-          <!-- Iniciales Gigantes -->
-          <div class="initials">{{ currentMentor.iniciales }}</div>
+          <div class="initials">{{ mentor.iniciales }}</div>
         </div>
 
-        <!-- MITAD INFERIOR (OSCURA) -->
         <div class="card-bottom">
           <div class="info-texto">
-            <h2>{{ currentMentor.nombre }}</h2>
-            <p>{{ currentMentor.rol }}</p>
+            <h2>{{ mentor.nombre }}</h2>
+            <p>{{ mentor.rol }}</p>
           </div>
 
-          <!-- Botones de Acción -->
-          <div class="action-buttons">
+          <div class="action-buttons" v-if="index === currentIndex">
             <button
               class="btn-reject"
               @click="handleSwipe('left')"
@@ -109,7 +155,6 @@ const resetCards = () => {
       </div>
     </div>
 
-    <!-- Pantalla cuando te quedas sin tarjetas -->
     <div class="empty-state" v-else>
       <div class="empty-icon">👻</div>
       <h2>¡No hay más perfiles!</h2>
@@ -125,48 +170,120 @@ const resetCards = () => {
   flex-direction: column;
   align-items: center;
   padding: 40px 20px;
-  min-height: 80vh;
+  min-height: 85vh;
 }
 
 .page-title {
-  color: var(--primary);
+  color: var(--text-main);
   margin-bottom: 40px;
   font-weight: 800;
   font-size: 2rem;
   text-align: center;
 }
 
-.card-container {
+/* ==========================================================================
+   1. CONTENEDOR DE LA BARAJA (STACK)
+   Explicación TFG: Añadimos 'perspective' para que las rotaciones 3D 
+   (el efecto de barajado) se vean con profundidad real.
+   ==========================================================================
+*/
+.stack-container {
   position: relative;
   width: 100%;
-  max-width: 380px; /* Ancho de la tarjeta */
-  height: 550px; /* Alto de la tarjeta */
+  max-width: 380px;
+  height: 550px;
+  perspective: 1200px; /* Clave para el efecto 3D del barajado */
 }
 
-/* LA TARJETA EN SÍ */
-.swipe-card {
+/* ==========================================================================
+   2. EXPLICACIÓN TFG: EFECTO DE BARALADO/ABANICO (HOVER)
+   Usamos Pseudo-elementos (::before y ::after) para crear las dos cartas 
+   fantasma laterales sin tener que crear divs extra en el HTML.
+   Están ocultas (opacity 0) por defecto.
+   ==========================================================================
+*/
+.stack-container::before,
+.stack-container::after {
+  content: "";
+  position: absolute;
+  top: 0;
   width: 100%;
   height: 100%;
-  background: var(--bg-card); /* Fondo oscuro */
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  opacity: 0; /* Ocultas por defecto */
+  filter: blur(8px); /* Difuminadas */
+  transition: all 0.4s ease-out; /* Animación suave al entrar/salir */
+  z-index: 9; /* Detrás de la carta principal (10), pero delante de la pila de reserva (7,6) */
+  pointer-events: none;
+}
+
+/* Diseñamos el fondo de las cartas fantasma (rojo arriba, oscuro abajo) */
+.stack-container::before {
+  background: linear-gradient(
+    to bottom,
+    var(--primary) 55%,
+    var(--bg-card) 45%
+  );
+}
+.stack-container::after {
+  background: linear-gradient(
+    to bottom,
+    var(--primary) 55%,
+    var(--bg-card) 45%
+  );
+}
+
+/* --- ACTIVACIÓN DEL EFECTO HOVER (Clase .is-fanning) --- */
+
+/* Carta de Abanico IZQUIERDA */
+.stack-container.is-fanning::before {
+  opacity: 0.5; /* Transparentes */
+  /* Giramos 35 grados hacia la izquierda y la movemos 160px a la izquierda */
+  transform: translateX(-160px) rotateY(-35deg) scale(0.95);
+}
+
+/* Carta de Abanico DERECHA */
+.stack-container.is-fanning::after {
+  opacity: 0.5;
+  /* Giramos 35 grados hacia la derecha y la movemos 160px a la derecha */
+  transform: translateX(160px) rotateY(35deg) scale(0.95);
+}
+
+/* ==========================================================================
+   3. ESTILOS DE LA CARTA (SWIPE-CARD)
+   La carta principal y la pila de reserva detrás.
+   ==========================================================================
+*/
+.swipe-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-card);
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: column;
   border: 1px solid var(--border);
+  /* Aseguramos transiciones suaves para el movimiento, tamaño, opacidad y blur */
   transition:
     transform 0.3s ease,
-    opacity 0.3s ease; /* Transición suave para el swipe */
+    opacity 0.3s ease,
+    filter 0.3s ease;
+  backface-visibility: hidden; /* Mejora el rendimiento de animaciones 3D */
 }
 
-/* Animaciones CSS controladas por JavaScript */
+/* Animaciones de Swipe (Accept/Reject) */
 .swipe-left {
-  transform: translateX(-200px) rotate(-15deg);
-  opacity: 0;
+  transform: translateX(-250px) rotate(-15deg) !important;
+  opacity: 0 !important;
 }
 .swipe-right {
-  transform: translateX(200px) rotate(15deg);
-  opacity: 0;
+  transform: translateX(250px) rotate(15deg) !important;
+  opacity: 0 !important;
 }
 
 /* PARTE ROJA */
@@ -219,13 +336,11 @@ const resetCards = () => {
   text-align: center;
   width: 100%;
 }
-
 .info-texto h2 {
   color: var(--text-main);
   margin: 0 0 8px 0;
   font-size: 1.8rem;
 }
-
 .info-texto p {
   color: var(--text-muted);
   margin: 0;
@@ -239,7 +354,6 @@ const resetCards = () => {
   width: 100%;
   justify-content: center;
 }
-
 .btn-reject,
 .btn-match {
   width: 70px;
@@ -256,8 +370,6 @@ const resetCards = () => {
     background-color 0.2s;
   outline: none;
 }
-
-/* Botón X (Cruzar) */
 .btn-reject {
   background: transparent;
   border: 2px solid var(--primary);
@@ -267,8 +379,6 @@ const resetCards = () => {
   background: rgba(215, 24, 32, 0.1);
   transform: scale(1.1);
 }
-
-/* Botón Corazón (Match) */
 .btn-match {
   background: var(--primary);
   border: none;
@@ -289,12 +399,10 @@ const resetCards = () => {
   border-radius: 20px;
   border: 1px solid var(--border);
 }
-
 .empty-icon {
   font-size: 4rem;
   margin-bottom: 20px;
 }
-
 .empty-state h2 {
   color: var(--text-main);
   margin-bottom: 10px;
