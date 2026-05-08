@@ -54,7 +54,7 @@ async function handleLogin() {
   // ==========================================
   if (email.value === "admin@nebrija.es" && password.value === "1234") {
     // Simulamos que el backend nos ha devuelto un usuario válido
-    localStorage.setItem(
+    sessionStorage.setItem(
       "usuario",
       JSON.stringify({ nombre: "Espe Dev", rol: "estudiante" }),
     );
@@ -66,7 +66,7 @@ async function handleLogin() {
   cargandoLogin.value = true;
   try {
     const res = await authService.login(email.value, password.value);
-    localStorage.setItem("usuario", JSON.stringify(res.data));
+    sessionStorage.setItem("usuario", JSON.stringify(res.data));
     router.push("/comunidades");
   } catch {
     error.value = "Credenciales incorrectas. Intenta de nuevo.";
@@ -99,7 +99,7 @@ async function handleRegister() {
       lenguajesAAprender: regRole.value === "estudiante" ? lenguajesStr : "",
       rol: regRole.value,
     });
-    localStorage.setItem("usuario", JSON.stringify(res.data));
+    sessionStorage.setItem("usuario", JSON.stringify(res.data));
     router.push("/comunidades");
   } catch (e) {
     errorReg.value =

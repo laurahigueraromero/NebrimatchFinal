@@ -11,8 +11,10 @@ import com.nebrimatch.backend.exception.ConflictException;
 import com.nebrimatch.backend.exception.NotFoundException;
 import com.nebrimatch.backend.model.MatchUsuario;
 import com.nebrimatch.backend.model.Usuario;
+import com.nebrimatch.backend.repository.ConversacionRepository;
 import com.nebrimatch.backend.repository.MatchUsuarioRepository;
 import com.nebrimatch.backend.repository.UsuarioRepository;
+import com.nebrimatch.backend.model.Conversacion;
 import com.nebrimatch.backend.service.mapper.MatchMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ public class MatchUsuarioService {
 
 	private final MatchUsuarioRepository matchUsuarioRepository;
 	private final UsuarioRepository usuarioRepository;
+	private final ConversacionRepository conversacionRepository;
 	private final MatchMapper matchMapper;
 
 	@Transactional
@@ -52,8 +55,18 @@ public class MatchUsuarioService {
 		// guardamos el match
 		MatchUsuario guardado = matchUsuarioRepository.save(match);
 
+		// Crear conversación automáticamente si no existe ya
+		boolean conversacionExiste = conversacionRepository
+				.existsByUsuario1AndUsuario2OrUsuario2AndUsuario1(u1, u2, u1, u2);
+		if (!conversacionExiste) {
+			Conversacion conversacion = new Conversacion();
+			conversacion.setUsuario1(u1);
+			conversacion.setUsuario2(u2);
+			conversacionRepository.save(conversacion);
+			log.info("Conversación creada automáticamente para el match {} entre {} y {}", guardado.getId(), usuario1Id, usuario2Id);
+		}
+
 		log.info("Match creado: {} entre {} y {}", guardado.getId(), usuario1Id, usuario2Id);
-		// mappeamos el match guardado a DTO para devolverlo al controlador (DTO siempre es lo que se devuelve al controlador, no la entidad)
 		return matchMapper.toMatchUsuarioDTO(guardado);
 	}
 

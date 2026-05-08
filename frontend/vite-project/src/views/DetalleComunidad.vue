@@ -11,7 +11,7 @@ const miembros = ref(0);
 const esMiembro = ref(false);
 const cargandoBoton = ref(false);
 
-const usuarioActual = JSON.parse(localStorage.getItem("usuario"));
+const usuarioActual = JSON.parse(sessionStorage.getItem("usuario"));
 
 onMounted(async () => {
   try {
