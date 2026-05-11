@@ -29,5 +29,17 @@ services:
       mysql:
         condition: service_healthy
 
+  frontend:
+    build:
+      context: ./frontend/vite-project
+      args:
+        VITE_API_BASE: http://localhost:8080
+        VITE_WS_URL: ws://localhost:8080/ws-native
+    container_name: nebrimatch-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
 volumes:
   mysql_data:

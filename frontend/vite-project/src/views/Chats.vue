@@ -91,7 +91,7 @@ onMounted(async () => {
   }
 
   stompClient = new Client({
-    brokerURL: "ws://localhost:8080/ws-native",
+    brokerURL: import.meta.env.VITE_WS_URL || "ws://localhost:8080/ws-native",
     reconnectDelay: 5000,
     onConnect: () => {
       if (convIdPendiente) {
