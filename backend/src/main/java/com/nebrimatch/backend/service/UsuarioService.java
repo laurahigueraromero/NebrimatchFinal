@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.nebrimatch.backend.dto.LoginRequestDTO;
 import com.nebrimatch.backend.dto.UsuarioDTO;
+import com.nebrimatch.backend.exception.ConflictException;
 import com.nebrimatch.backend.model.RolUsuario;
 import com.nebrimatch.backend.model.Usuario;
 import com.nebrimatch.backend.repository.RolUsuarioRepository;
@@ -51,10 +52,10 @@ public class UsuarioService {
     // Crear usuario
     public UsuarioDTO crear(UsuarioDTO dto) {
         if (usuarioRepository.existsByEmail(dto.getEmail())) {
-            throw new RuntimeException("Ya existe un usuario con ese email");
+            throw new ConflictException("Ya existe un usuario con ese email");
         }
         if (usuarioRepository.existsByNombreUsuario(dto.getNombreUsuario())) {
-            throw new RuntimeException("Ya existe un usuario con ese nombre de usuario");
+            throw new ConflictException("Ya existe un usuario con ese nombre de usuario");
         }
 
         Usuario usuario = toEntity(dto);
