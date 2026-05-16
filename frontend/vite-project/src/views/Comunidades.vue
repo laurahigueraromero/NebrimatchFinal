@@ -64,7 +64,7 @@ const comunidadesFiltradas = computed(() =>
       class="search-input"
     />
     <button class="btn-solicitar" @click="abrirSolicitud">
-      + Solicitar nueva comunidad
+      + Solicitar crear comunidad
     </button>
     <p v-if="cargando" class="estado">Cargando comunidades...</p>
     <p v-else-if="error" class="estado error">{{ error }}</p>
