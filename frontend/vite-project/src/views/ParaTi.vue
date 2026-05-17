@@ -15,10 +15,10 @@ onMounted(async () => {
   if (!usuarioActual) { cargando.value = false; return; }
   try {
     const res = await usuarioService.obtenerTodos();
-    // Excluir al usuario actual y al usuario Sistema
-    usuarios.value = res.data.filter(
-      (u) => u.id !== usuarioActual.id && u.nombreUsuario !== "Sistema"
-    );
+    usuarios.value = res.data
+      .filter((u) => u.id !== usuarioActual.id && u.nombreUsuario !== "Sistema" && u.rol === "profesor")
+      .sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion))
+      .slice(0, 3);
   } catch {
     // sin usuarios
   } finally {
