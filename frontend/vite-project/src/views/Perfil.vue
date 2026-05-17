@@ -1,6 +1,9 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { usuarioService, lenguajeService } from "../services/api";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 // ── DATOS DEL USUARIO LOGUEADO ────────────────────────────
 const usuario = ref(null);
@@ -17,32 +20,7 @@ const errorEdicion = ref("");
 
 // ── MODAL SUGERENCIAS ─────────────────────────────────────
 const perfilSeleccionado = ref(null);
-const sugerencias = ref([
-  {
-    id: 1,
-    nombre: "Rodrigo",
-    rol: "Mentor",
-    avatar: "https://ui-avatars.com/api/?name=Rodrigo&background=0D8ABC&color=fff",
-    bio: "Senior Frontend Developer. Te ayudo a estructurar tu proyecto en Vue y React.",
-    lenguajes: ["Vue.js", "React", "TypeScript"],
-  },
-  {
-    id: 2,
-    nombre: "Laura",
-    rol: "Mentor",
-    avatar: "https://ui-avatars.com/api/?name=Laura&background=4CAF50&color=fff",
-    bio: "Experta en backend y arquitecturas de bases de datos.",
-    lenguajes: ["Java", "Spring Boot", "SQL"],
-  },
-  {
-    id: 3,
-    nombre: "Carlos",
-    rol: "Estudiante",
-    avatar: "https://ui-avatars.com/api/?name=Carlos&background=FF9800&color=fff",
-    bio: "Buscando compañero para montar un proyecto de IA.",
-    lenguajes: ["Python", "C++"],
-  },
-]);
+const sugerencias = ref([]);
 
 // ── COMPUTED ──────────────────────────────────────────────
 const esProfesor = computed(() => usuario.value?.rol === "profesor");
@@ -74,13 +52,18 @@ onMounted(async () => {
     return;
   }
   try {
-    const [resUsuario, resLenguajes] = await Promise.all([
+    const [resUsuario, resLenguajes, resTodos] = await Promise.all([
       usuarioService.obtenerPorId(local.id),
       lenguajeService.obtenerTodos(),
+      usuarioService.obtenerTodos(),
     ]);
     usuario.value = resUsuario.data;
     lenguajesDisponibles.value = resLenguajes.data;
     sessionStorage.setItem("usuario", JSON.stringify(resUsuario.data));
+    sugerencias.value = resTodos.data
+      .filter((u) => u.id !== local.id && u.rol === "profesor")
+      .sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion))
+      .slice(0, 3);
   } catch {
     error.value = "Error al cargar el perfil.";
   } finally {
@@ -217,11 +200,15 @@ function cerrarModal() {
             class="sugerencia-card"
             @click="abrirModal(perfil)"
           >
-            <img :src="perfil.avatar" alt="Avatar" class="avatar-pequeno" />
+            <img
+              :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(perfil.nombreUsuario)}&background=d71820&color=fff&size=100`"
+              alt="Avatar"
+              class="avatar-pequeno"
+            />
             <div class="sugerencia-info">
-              <h4>{{ perfil.nombre }}</h4>
-              <p class="rol-text">{{ perfil.rol }}</p>
-              <p class="habilidades-preview">{{ perfil.lenguajes.slice(0, 2).join(", ") }}</p>
+              <h4>{{ perfil.nombreUsuario }}</h4>
+              <p class="rol-text">Mentor</p>
+              <p class="habilidades-preview">{{ perfil.lenguajesAEnsenar || "Sin lenguajes" }}</p>
             </div>
           </div>
         </div>
@@ -232,19 +219,28 @@ function cerrarModal() {
     <div v-if="perfilSeleccionado" class="modal-overlay" @click.self="cerrarModal">
       <div class="modal-card card">
         <button class="btn-cerrar" @click="cerrarModal">✕</button>
-        <img :src="perfilSeleccionado.avatar" class="avatar-grande center" />
-        <h2 class="text-center">{{ perfilSeleccionado.nombre }}</h2>
+        <img
+          :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(perfilSeleccionado.nombreUsuario)}&background=d71820&color=fff&size=200`"
+          class="avatar-grande center"
+        />
+        <h2 class="text-center">{{ perfilSeleccionado.nombreUsuario }}</h2>
         <div class="text-center mb-20">
-          <span class="badge-rol" :class="perfilSeleccionado.rol.toLowerCase()">{{ perfilSeleccionado.rol }}</span>
+          <span class="badge-rol profesor">Mentor</span>
         </div>
-        <p class="modal-bio">{{ perfilSeleccionado.bio }}</p>
+        <p class="modal-bio">{{ perfilSeleccionado.descripcion || "Este mentor aún no ha escrito su biografía." }}</p>
         <div class="tags-section">
-          <h3>Lenguajes</h3>
+          <h3>Lenguajes que enseña</h3>
           <div class="tags-container">
-            <span v-for="lang in perfilSeleccionado.lenguajes" :key="lang" class="tag lang-tag">{{ lang }}</span>
+            <span
+              v-for="lang in (perfilSeleccionado.lenguajesAEnsenar || '').split(',').filter(Boolean)"
+              :key="lang"
+              class="tag lang-tag"
+            >{{ lang.trim() }}</span>
           </div>
         </div>
-        <button class="btn-primary mt-20">Enviar Mensaje a {{ perfilSeleccionado.nombre }}</button>
+        <button class="btn-primary mt-20" @click="router.push('/chats')">
+          Enviar Mensaje a {{ perfilSeleccionado.nombreUsuario }}
+        </button>
       </div>
     </div>
 
